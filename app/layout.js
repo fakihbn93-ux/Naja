@@ -1,3 +1,5 @@
+import './globals.css'
+
 export const metadata = {
   title: "NFC Review Manager",
   description: "Manajemen kartu NFC + QR Google Review"
