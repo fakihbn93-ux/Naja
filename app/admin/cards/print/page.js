@@ -62,26 +62,153 @@ export default async function PrintCards() {
 
   return (
 
-    <main className="wrap">
+    <main className="wrap print-area">
 
 
-      <div
+      <style>{`
+
+        @media print {
+
+          body {
+
+            background:white !important;
+
+          }
+
+
+          .no-print {
+
+            display:none !important;
+
+          }
+
+
+          .print-area {
+
+            padding:0 !important;
+
+            margin:0 !important;
+
+          }
+
+
+          .card-item {
+
+            break-inside: avoid;
+
+          }
+
+        }
+
+
+        .card-grid {
+
+          display:grid;
+
+          grid-template-columns:
+          repeat(4,1fr);
+
+          gap:16px;
+
+        }
+
+
+        .card-item {
+
+          height:260px;
+
+          border:1px solid #ddd;
+
+          border-radius:16px;
+
+          display:flex;
+
+          flex-direction:column;
+
+          justify-content:center;
+
+          align-items:center;
+
+          background:white;
+
+        }
+
+
+        .card-number {
+
+          margin-top:12px;
+
+          font-size:26px;
+
+          font-weight:700;
+
+          letter-spacing:3px;
+
+        }
+
+
+        @media print {
+
+
+          .card-grid {
+
+            grid-template-columns:
+            repeat(4,1fr);
+
+            gap:8px;
+
+          }
+
+
+          .card-item {
+
+            height:220px;
+
+            border:1px solid #000;
+
+          }
+
+
+        }
+
+
+      `}</style>
+
+
+
+      <div className="no-print"
+
         style={{
 
-          display: 'grid',
-
-          gridTemplateColumns:
-            'repeat(auto-fit,minmax(220px,1fr))',
-
-          gap: 20
+          marginBottom:20
 
         }}
+
       >
 
+        <button
+
+          className="btn"
+
+          onClick={() => window.print()}
+
+        >
+
+          Cetak Kartu
+
+        </button>
+
+      </div>
+
+
+
+
+      <div className="card-grid">
 
 
         {
-          cards.map((card) => {
+
+          cards.map((card)=>{
 
 
             const number =
@@ -99,58 +226,29 @@ export default async function PrintCards() {
 
                 key={card.serial}
 
-                style={{
-
-                  border: '1px solid #ddd',
-
-                  borderRadius: 16,
-
-                  padding: 20,
-
-                  textAlign: 'center',
-
-                  background: '#fff'
-
-                }}
+                className="card-item"
 
               >
-
 
 
                 <img
 
                   src={`/api/qr/${card.serial}`}
 
-                  alt={`QR ${card.serial}`}
+                  width="150"
 
-                  width="180"
+                  height="150"
 
-                  height="180"
+                  alt={card.serial}
 
                 />
 
 
-
-                <div
-
-                  style={{
-
-                    marginTop: 12,
-
-                    fontSize: 28,
-
-                    fontWeight: 700,
-
-                    letterSpacing: 2
-
-                  }}
-
-                >
+                <div className="card-number">
 
                   {displayNumber}
 
                 </div>
-
 
 
               </div>
@@ -163,14 +261,11 @@ export default async function PrintCards() {
         }
 
 
-
       </div>
-
 
 
     </main>
 
   )
-
 
 }
