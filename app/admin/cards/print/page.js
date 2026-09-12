@@ -1,33 +1,47 @@
 import QRCode from 'qrcode'
+import { createClient } from '../../../lib/supabase/server'
 import { supabaseAdmin } from '../../../lib/supabase/admin'
 
 
 export const dynamic = 'force-dynamic'
 
 
-function getNumber(serial) {
+function getNumber(serial){
+
   const match = serial.match(/(\d+)$/)
 
-  if (!match) return serial
+  if(!match){
+    return serial
+  }
 
-  return String(Number(match[1])).padStart(3, '0')
+  return String(Number(match[1])).padStart(3,'0')
+
 }
 
 
-export default async function PrintCards() {
 
-  const { data: cards, error } = await supabaseAdmin
-    .from('cards')
-    .select('serial,status')
-    .order('serial', { ascending: true })
+export default async function PrintCards(){
 
 
-  if (error) {
+  // cek user login
+
+  const sb = await createClient()
+
+
+  const {
+    data:{
+      user
+    }
+  } = await sb.auth.getUser()
+
+
+
+  if(!user){
 
     return (
       <main className="wrap">
         <div className="card">
-          Gagal mengambil data kartu.
+          Akses admin diperlukan.
         </div>
       </main>
     )
@@ -36,40 +50,106 @@ export default async function PrintCards() {
 
 
 
+  // cek role admin
+
+  const {
+    data:profile
+  } = await sb
+    .from('profiles')
+    .select('role')
+    .eq('id',user.id)
+    .maybeSingle()
+
+
+
+  if(profile?.role !== 'admin'){
+
+    return (
+      <main className="wrap">
+        <div className="card">
+          Akses admin diperlukan.
+        </div>
+      </main>
+    )
+
+  }
+
+
+
+  // ambil kartu
+
+  const {
+    data:cards,
+    error
+  } = await supabaseAdmin
+    .from('cards')
+    .select('serial,status')
+    .order('serial',{ascending:true})
+
+
+
+  if(error){
+
+    return (
+      <main className="wrap">
+        <div className="card">
+          Gagal mengambil kartu.
+        </div>
+      </main>
+    )
+
+  }
+
+
+
+
   const base =
     process.env.NEXT_PUBLIC_APP_URL ||
-    ''
+    'https://nfc-project-new.vercel.app'
 
 
 
-  const items = await Promise.all(
+  const items =
+    await Promise.all(
 
-    (cards || []).map(async (card)=>{
-
-      const url =
-        `${base}/r/${card.serial}?method=qr`
+      cards.map(async(card)=>{
 
 
-      const qr =
-        await QRCode.toDataURL(
-          url,
-          {
-            width:500,
-            margin:1,
-            errorCorrectionLevel:'H'
-          }
-        )
+        const qrUrl =
+          `${base}/r/${card.serial}?method=qr`
 
 
-      return {
-        ...card,
-        qr,
-        number:getNumber(card.serial)
-      }
 
-    })
+        const qr =
+          await QRCode.toDataURL(
+            qrUrl,
+            {
+              width:500,
+              margin:1,
+              errorCorrectionLevel:'H'
+            }
+          )
 
-  )
+
+
+        return {
+
+          serial:card.serial,
+
+          status:card.status,
+
+          number:getNumber(card.serial),
+
+          qr
+
+        }
+
+
+      })
+
+    )
+
+
 
 
 
@@ -83,8 +163,8 @@ export default async function PrintCards() {
       </h1>
 
 
-      <p className="subtitle">
-        QR dan NFC berasal dari serial kartu.
+      <p>
+        QR berasal dari serial kartu.
       </p>
 
 
@@ -92,30 +172,30 @@ export default async function PrintCards() {
       <div className="grid">
 
 
-        {
-          items.map(card=>(
+      {
+        items.map(card=>(
 
-            <div
-              key={card.serial}
-              className="ticket"
-            >
+          <div
+            key={card.serial}
+            className="ticket"
+          >
 
-
-              <img
-                src={card.qr}
-                className="qr"
-              />
-
-
-              <div className="number">
-                {card.number}
-              </div>
+            <img
+              src={card.qr}
+              className="qr"
+            />
 
 
+            <div className="number">
+              {card.number}
             </div>
 
-          ))
-        }
+
+          </div>
+
+
+        ))
+      }
 
 
       </div>
@@ -126,29 +206,9 @@ export default async function PrintCards() {
 
 .print-page{
 
-  padding:20px;
+padding:20px;
 
-  font-family:Arial, sans-serif;
-
-}
-
-
-
-h1{
-
-  font-size:32px;
-
-  margin-bottom:5px;
-
-}
-
-
-
-.subtitle{
-
-  color:#666;
-
-  margin-bottom:25px;
+font-family:Arial;
 
 }
 
@@ -156,12 +216,11 @@ h1{
 
 .grid{
 
-  display:grid;
+display:grid;
 
-  grid-template-columns:
-  repeat(4,1fr);
+grid-template-columns:repeat(4,1fr);
 
-  gap:12px;
+gap:12px;
 
 }
 
@@ -169,21 +228,19 @@ h1{
 
 .ticket{
 
-  height:190px;
+border:1px solid #ddd;
 
-  border:1px solid #ddd;
+border-radius:12px;
 
-  border-radius:12px;
+height:180px;
 
-  display:flex;
+display:flex;
 
-  flex-direction:column;
+flex-direction:column;
 
-  align-items:center;
+align-items:center;
 
-  justify-content:center;
-
-  background:white;
+justify-content:center;
 
 }
 
@@ -191,9 +248,9 @@ h1{
 
 .qr{
 
-  width:120px;
+width:120px;
 
-  height:120px;
+height:120px;
 
 }
 
@@ -201,43 +258,35 @@ h1{
 
 .number{
 
-  margin-top:12px;
+margin-top:10px;
 
-  font-size:24px;
+font-size:24px;
 
-  font-weight:700;
+font-weight:bold;
 
-  letter-spacing:2px;
+letter-spacing:3px;
 
 }
 
 
 
-@media print {
+@media print{
 
 
 @page{
 
-  size:A4 portrait;
+size:A4 portrait;
 
-  margin:10mm;
-
-}
-
-
-
-.print-page{
-
-  padding:0;
+margin:10mm;
 
 }
 
 
 
 h1,
-.subtitle{
+p{
 
-  display:none;
+display:none;
 
 }
 
@@ -245,10 +294,9 @@ h1,
 
 .grid{
 
-  grid-template-columns:
-  repeat(4,1fr);
+grid-template-columns:repeat(4,1fr);
 
-  gap:8px;
+gap:8px;
 
 }
 
@@ -256,11 +304,9 @@ h1,
 
 .ticket{
 
-  height:62mm;
+height:60mm;
 
-  border:1px solid #ddd;
-
-  break-inside:avoid;
+break-inside:avoid;
 
 }
 
@@ -268,9 +314,9 @@ h1,
 
 .qr{
 
-  width:38mm;
+width:38mm;
 
-  height:38mm;
+height:38mm;
 
 }
 
@@ -278,9 +324,7 @@ h1,
 
 .number{
 
-  font-size:18pt;
-
-  margin-top:5mm;
+font-size:18pt;
 
 }
 
@@ -293,9 +337,9 @@ h1,
 `}</style>
 
 
-
     </main>
 
   )
+
 
 }
