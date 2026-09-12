@@ -1,101 +1,62 @@
-import QRCode from 'qrcode'
-import { createClient } from '../../../lib/supabase/server'
-import { supabaseAdmin } from '../../../lib/supabase/admin'
+import { supabaseAdmin } from '../../../../lib/supabase/admin'
+import PrintButton from './PrintButton'
 
 
 export const dynamic = 'force-dynamic'
-
-
-function getNumber(serial){
-
-  const match = serial.match(/(\d+)$/)
-
-  if(!match){
-    return serial
-  }
-
-  return String(Number(match[1])).padStart(3,'0')
-
-}
 
 
 
 export default async function PrintCards(){
 
 
-  // cek user login
-
-  const sb = await createClient()
-
-
-  const {
-    data:{
-      user
-    }
-  } = await sb.auth.getUser()
-
-
-
-  if(!user){
-
-    return (
-      <main className="wrap">
-        <div className="card">
-          Akses admin diperlukan.
-        </div>
-      </main>
-    )
-
-  }
-
-
-
-  // cek role admin
-
-  const {
-    data:profile
-  } = await sb
-    .from('profiles')
-    .select('role')
-    .eq('id',user.id)
-    .maybeSingle()
-
-
-
-  if(profile?.role !== 'admin'){
-
-    return (
-      <main className="wrap">
-        <div className="card">
-          Akses admin diperlukan.
-        </div>
-      </main>
-    )
-
-  }
-
-
-
-  // ambil kartu
-
-  const {
-    data:cards,
-    error
-  } = await supabaseAdmin
-    .from('cards')
-    .select('serial,status')
-    .order('serial',{ascending:true})
+  const { data: cards, error } =
+    await supabaseAdmin
+      .from('cards')
+      .select('serial')
+      .order('serial',{
+        ascending:true
+      })
 
 
 
   if(error){
 
     return (
+
       <main className="wrap">
+
         <div className="card">
-          Gagal mengambil kartu.
+
+          <h1>Error</h1>
+
+          <p>
+            {error.message}
+          </p>
+
         </div>
+
       </main>
+
+    )
+
+  }
+
+
+
+  if(!cards || cards.length===0){
+
+    return (
+
+      <main className="wrap">
+
+        <div className="card">
+
+          Tidak ada kartu.
+
+        </div>
+
+      </main>
+
     )
 
   }
@@ -103,98 +64,135 @@ export default async function PrintCards(){
 
 
 
-  const base =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    'https://nfc-project-new.vercel.app'
-
-
-
-  const items =
-    await Promise.all(
-
-      cards.map(async(card)=>{
-
-
-        const qrUrl =
-          `${base}/r/${card.serial}?method=qr`
-
-
-
-        const qr =
-          await QRCode.toDataURL(
-            qrUrl,
-            {
-              width:500,
-              margin:1,
-              errorCorrectionLevel:'H'
-            }
-          )
-
-
-
-        return {
-
-          serial:card.serial,
-
-          status:card.status,
-
-          number:getNumber(card.serial),
-
-          qr
-
-        }
-
-
-      })
-
-    )
-
-
-
-
-
   return (
 
-    <main className="print-page">
+    <main className="wrap">
 
 
-      <h1>
-        Cetak Kartu NFC
-      </h1>
+      <div
+        className="no-print"
+        style={{
+          marginBottom:20
+        }}
+      >
+
+        <PrintButton />
+
+      </div>
 
 
-      <p>
-        QR berasal dari serial kartu.
-      </p>
 
+      <div
 
+        className="print-grid"
 
-      <div className="grid">
+        style={{
+
+          display:'grid',
+
+          gridTemplateColumns:
+          'repeat(4,1fr)',
+
+          gap:12
+
+        }}
+
+      >
+
 
 
       {
-        items.map(card=>(
 
-          <div
-            key={card.serial}
-            className="ticket"
-          >
-
-            <img
-              src={card.qr}
-              className="qr"
-            />
+        cards.map((card)=>{
 
 
-            <div className="number">
-              {card.number}
+          const number =
+          card.serial.match(/\d+$/)?.[0] || '000'
+
+
+          const display =
+          number.slice(-3)
+
+
+
+          return (
+
+            <div
+
+              key={card.serial}
+
+              className="print-card"
+
+              style={{
+
+                border:'1px solid #ddd',
+
+                borderRadius:12,
+
+                padding:12,
+
+                textAlign:'center',
+
+                background:'#fff',
+
+                height:180,
+
+                display:'flex',
+
+                flexDirection:'column',
+
+                alignItems:'center',
+
+                justifyContent:'center'
+
+              }}
+
+            >
+
+
+
+              <img
+
+                src={`/api/qr/${card.serial}`}
+
+                width="120"
+
+                height="120"
+
+                alt={card.serial}
+
+              />
+
+
+
+              <div
+
+                style={{
+
+                  marginTop:8,
+
+                  fontSize:24,
+
+                  fontWeight:700,
+
+                  letterSpacing:3
+
+                }}
+
+              >
+
+                {display}
+
+              </div>
+
+
             </div>
 
+          )
 
-          </div>
 
+        })
 
-        ))
       }
 
 
@@ -204,127 +202,61 @@ export default async function PrintCards(){
 
 <style>{`
 
-.print-page{
-
-padding:20px;
-
-font-family:Arial;
-
-}
-
-
-
-.grid{
-
-display:grid;
-
-grid-template-columns:repeat(4,1fr);
-
-gap:12px;
-
-}
-
-
-
-.ticket{
-
-border:1px solid #ddd;
-
-border-radius:12px;
-
-height:180px;
-
-display:flex;
-
-flex-direction:column;
-
-align-items:center;
-
-justify-content:center;
-
-}
-
-
-
-.qr{
-
-width:120px;
-
-height:120px;
-
-}
-
-
-
-.number{
-
-margin-top:10px;
-
-font-size:24px;
-
-font-weight:bold;
-
-letter-spacing:3px;
-
-}
-
-
-
 @media print{
 
 
 @page{
 
-size:A4 portrait;
+ size:A4 portrait;
 
-margin:10mm;
-
-}
-
-
-
-h1,
-p{
-
-display:none;
+ margin:10mm;
 
 }
 
 
 
-.grid{
+.no-print{
 
-grid-template-columns:repeat(4,1fr);
-
-gap:8px;
+ display:none!important;
 
 }
 
 
 
-.ticket{
+.print-grid{
 
-height:60mm;
+ grid-template-columns:
+ repeat(4,1fr)!important;
 
-break-inside:avoid;
-
-}
-
-
-
-.qr{
-
-width:38mm;
-
-height:38mm;
+ gap:8px!important;
 
 }
 
 
 
-.number{
+.print-card{
 
-font-size:18pt;
+ height:55mm!important;
+
+ break-inside:avoid;
+
+}
+
+
+
+.print-card img{
+
+ width:35mm!important;
+
+ height:35mm!important;
+
+}
+
+
+
+.print-card div{
+
+ font-size:18pt!important;
 
 }
 
