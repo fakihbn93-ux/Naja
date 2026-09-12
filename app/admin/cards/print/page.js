@@ -2,7 +2,9 @@ import { supabaseAdmin } from '../../../../lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
+
 export default async function PrintCards() {
+
 
   const { data: cards, error } =
     await supabaseAdmin
@@ -13,17 +15,25 @@ export default async function PrintCards() {
       })
 
 
+
   if (error) {
 
     return (
+
       <main className="wrap">
 
         <div className="card">
+
           <h1>Error</h1>
-          <p>{error.message}</p>
+
+          <p>
+            {error.message}
+          </p>
+
         </div>
 
       </main>
+
     )
 
   }
@@ -37,7 +47,9 @@ export default async function PrintCards() {
       <main className="wrap">
 
         <div className="card">
+
           Tidak ada kartu.
+
         </div>
 
       </main>
@@ -54,14 +66,18 @@ export default async function PrintCards() {
 
 
       <div
-        className="print-grid"
         style={{
-          display:'grid',
+
+          display: 'grid',
+
           gridTemplateColumns:
             'repeat(auto-fit,minmax(220px,1fr))',
-          gap:20
+
+          gap: 20
+
         }}
       >
+
 
 
         {
@@ -85,19 +101,20 @@ export default async function PrintCards() {
 
                 style={{
 
-                  border:'1px solid #ddd',
+                  border: '1px solid #ddd',
 
-                  borderRadius:16,
+                  borderRadius: 16,
 
-                  padding:20,
+                  padding: 20,
 
-                  textAlign:'center',
+                  textAlign: 'center',
 
-                  background:'#fff'
+                  background: '#fff'
 
                 }}
 
               >
+
 
 
                 <img
@@ -113,25 +130,27 @@ export default async function PrintCards() {
                 />
 
 
+
                 <div
 
                   style={{
 
-                    marginTop:12,
+                    marginTop: 12,
 
-                    fontSize:28,
+                    fontSize: 28,
 
-                    fontWeight:700,
+                    fontWeight: 700,
 
-                    letterSpacing:2
+                    letterSpacing: 2
 
                   }}
 
                 >
 
-                  #{displayNumber}
+                  {displayNumber}
 
                 </div>
+
 
 
               </div>
@@ -144,11 +163,14 @@ export default async function PrintCards() {
         }
 
 
+
       </div>
+
 
 
     </main>
 
   )
+
 
 }
