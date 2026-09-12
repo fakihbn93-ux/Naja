@@ -6,19 +6,24 @@ export const dynamic = 'force-dynamic'
 
 export default async function PrintCards() {
 
-
-  const { data: cards } = await supabaseAdmin
+  const { data: cards, error } = await supabaseAdmin
     .from('cards')
-    .select(`
-      serial,
-      status,
-      businesses(
-        name
-      )
-    `)
+    .select('serial,status,businesses(*)')
     .order('serial', {
-      ascending:true
+      ascending: true
     })
+
+
+  if (error) {
+    return (
+      <main className="wrap">
+        <div className="card">
+          <h1>Error</h1>
+          <p>{error.message}</p>
+        </div>
+      </main>
+    )
+  }
 
 
   return (
@@ -27,16 +32,11 @@ export default async function PrintCards() {
 
 
       <div className="nav">
+
         <Link href="/admin">
           ← Dashboard
         </Link>
 
-        <button
-          className="btn"
-          onClick={() => {}}
-        >
-          Print
-        </button>
 
       </div>
 
@@ -51,7 +51,7 @@ export default async function PrintCards() {
 
 
         <p className="muted">
-          QR ini sudah terhubung dengan serial kartu.
+          QR dan NFC sudah tertanam pada kartu fisik.
         </p>
 
 
@@ -66,50 +66,53 @@ export default async function PrintCards() {
         >
 
 
-        {
-          cards?.map((card)=>(
+          {
+            cards?.map((card)=>(
 
-            <div
-              key={card.serial}
-              style={{
-                border:'1px solid #ddd',
-                borderRadius:16,
-                padding:20,
-                textAlign:'center'
-              }}
-            >
+              <div
+                key={card.serial}
+                style={{
+                  border:'1px solid #ddd',
+                  borderRadius:16,
+                  padding:20,
+                  textAlign:'center'
+                }}
+              >
 
-
-              <h2>
-                {card.serial}
-              </h2>
-
-
-              <p>
-                {
-                  card.businesses?.name ||
-                  'Belum aktif'
-                }
-              </p>
+                <h2>
+                  {card.serial}
+                </h2>
 
 
-              <img
-                src={`/api/qr/${card.serial}`}
-                width="180"
-                height="180"
-                alt={card.serial}
-              />
+                <p>
+                  {
+                    card.businesses?.name ||
+                    'Belum aktif'
+                  }
+                </p>
 
 
-              <p>
-                Scan untuk Google Review
-              </p>
+                <img
+                  src={`/api/qr/${card.serial}`}
+                  width="180"
+                  height="180"
+                  alt={card.serial}
+                />
 
 
-            </div>
+                <p>
+                  Status:
+                  <b>
+                    {' '}
+                    {card.status}
+                  </b>
+                </p>
 
-          ))
-        }
+
+              </div>
+
+            ))
+          }
 
 
         </div>
