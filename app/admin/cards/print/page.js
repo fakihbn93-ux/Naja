@@ -1,190 +1,301 @@
-import { supabaseAdmin } from '../../../../lib/supabase/admin'
-import PrintButton from './PrintButton'
+import QRCode from 'qrcode'
+import { supabaseAdmin } from '../../../lib/supabase/admin'
 
 
 export const dynamic = 'force-dynamic'
 
 
-export default async function PrintCards(){
+function getNumber(serial) {
+  const match = serial.match(/(\d+)$/)
+
+  if (!match) return serial
+
+  return String(Number(match[1])).padStart(3, '0')
+}
 
 
-  const { data: cards, error } =
-    await supabaseAdmin
-      .from('cards')
-      .select('serial')
-      .order('serial',{
-        ascending:true
-      })
+export default async function PrintCards() {
+
+  const { data: cards, error } = await supabaseAdmin
+    .from('cards')
+    .select('serial,status')
+    .order('serial', { ascending: true })
 
 
-
-  if(error){
+  if (error) {
 
     return (
-
       <main className="wrap">
-
         <div className="card">
-
-          <h1>Error</h1>
-
-          <p>
-            {error.message}
-          </p>
-
+          Gagal mengambil data kartu.
         </div>
-
       </main>
-
     )
 
   }
 
 
 
-  if(!cards || cards.length===0){
+  const base =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    ''
 
-    return (
 
-      <main className="wrap">
 
-        <div className="card">
+  const items = await Promise.all(
 
-          Tidak ada kartu.
+    (cards || []).map(async (card)=>{
 
-        </div>
+      const url =
+        `${base}/r/${card.serial}?method=qr`
 
-      </main>
 
-    )
+      const qr =
+        await QRCode.toDataURL(
+          url,
+          {
+            width:500,
+            margin:1,
+            errorCorrectionLevel:'H'
+          }
+        )
 
-  }
 
+      return {
+        ...card,
+        qr,
+        number:getNumber(card.serial)
+      }
+
+    })
+
+  )
 
 
 
   return (
 
-    <main className="wrap">
+    <main className="print-page">
 
 
-      <div
-        className="no-print"
-        style={{
-          marginBottom:20
-        }}
-      >
-
-        <PrintButton />
-
-      </div>
+      <h1>
+        Cetak Kartu NFC
+      </h1>
 
 
-
-      <div
-
-        style={{
-
-          display:'grid',
-
-          gridTemplateColumns:
-          'repeat(4,1fr)',
-
-          gap:16
-
-        }}
-
-      >
+      <p className="subtitle">
+        QR dan NFC berasal dari serial kartu.
+      </p>
 
 
 
-      {
-
-        cards.map((card)=>{
+      <div className="grid">
 
 
-          const number =
-          card.serial.match(/\d+$/)?.[0] || '000'
-
-
-          const display =
-          number.slice(-3)
-
-
-
-          return (
+        {
+          items.map(card=>(
 
             <div
-
               key={card.serial}
-
-              style={{
-
-                border:'1px solid #ddd',
-
-                borderRadius:16,
-
-                padding:20,
-
-                textAlign:'center',
-
-                background:'#fff'
-
-              }}
-
+              className="ticket"
             >
 
 
               <img
-
-                src={`/api/qr/${card.serial}`}
-
-                width="160"
-
-                height="160"
-
-                alt={card.serial}
-
+                src={card.qr}
+                className="qr"
               />
 
 
-              <div
-
-                style={{
-
-                  marginTop:12,
-
-                  fontSize:28,
-
-                  fontWeight:700,
-
-                  letterSpacing:3
-
-                }}
-
-              >
-
-                {display}
-
+              <div className="number">
+                {card.number}
               </div>
 
 
             </div>
 
-          )
-
-
-        })
-
-      }
+          ))
+        }
 
 
       </div>
 
 
+
+<style>{`
+
+.print-page{
+
+  padding:20px;
+
+  font-family:Arial, sans-serif;
+
+}
+
+
+
+h1{
+
+  font-size:32px;
+
+  margin-bottom:5px;
+
+}
+
+
+
+.subtitle{
+
+  color:#666;
+
+  margin-bottom:25px;
+
+}
+
+
+
+.grid{
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(4,1fr);
+
+  gap:12px;
+
+}
+
+
+
+.ticket{
+
+  height:190px;
+
+  border:1px solid #ddd;
+
+  border-radius:12px;
+
+  display:flex;
+
+  flex-direction:column;
+
+  align-items:center;
+
+  justify-content:center;
+
+  background:white;
+
+}
+
+
+
+.qr{
+
+  width:120px;
+
+  height:120px;
+
+}
+
+
+
+.number{
+
+  margin-top:12px;
+
+  font-size:24px;
+
+  font-weight:700;
+
+  letter-spacing:2px;
+
+}
+
+
+
+@media print {
+
+
+@page{
+
+  size:A4 portrait;
+
+  margin:10mm;
+
+}
+
+
+
+.print-page{
+
+  padding:0;
+
+}
+
+
+
+h1,
+.subtitle{
+
+  display:none;
+
+}
+
+
+
+.grid{
+
+  grid-template-columns:
+  repeat(4,1fr);
+
+  gap:8px;
+
+}
+
+
+
+.ticket{
+
+  height:62mm;
+
+  border:1px solid #ddd;
+
+  break-inside:avoid;
+
+}
+
+
+
+.qr{
+
+  width:38mm;
+
+  height:38mm;
+
+}
+
+
+
+.number{
+
+  font-size:18pt;
+
+  margin-top:5mm;
+
+}
+
+
+
+}
+
+
+
+`}</style>
+
+
+
     </main>
 
   )
-
 
 }
