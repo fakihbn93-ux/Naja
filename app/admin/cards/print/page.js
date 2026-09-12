@@ -1,21 +1,24 @@
 import { supabaseAdmin } from '../../../../lib/supabase/admin'
+import PrintButton from './PrintButton'
+
 
 export const dynamic = 'force-dynamic'
 
 
-export default async function PrintCards() {
+export default async function PrintCards(){
 
 
   const { data: cards, error } =
     await supabaseAdmin
       .from('cards')
       .select('serial')
-      .order('serial', {
-        ascending: true
+      .order('serial',{
+        ascending:true
       })
 
 
-  if (error) {
+
+  if(error){
 
     return (
 
@@ -25,7 +28,9 @@ export default async function PrintCards() {
 
           <h1>Error</h1>
 
-          <p>{error.message}</p>
+          <p>
+            {error.message}
+          </p>
 
         </div>
 
@@ -37,7 +42,7 @@ export default async function PrintCards() {
 
 
 
-  if (!cards || cards.length === 0) {
+  if(!cards || cards.length===0){
 
     return (
 
@@ -57,31 +62,20 @@ export default async function PrintCards() {
 
 
 
+
   return (
 
     <main className="wrap">
 
 
       <div
+        className="no-print"
         style={{
           marginBottom:20
         }}
       >
 
-        <button
-
-          className="btn"
-
-          onClick={() => {
-            window.print()
-          }}
-
-        >
-
-          Cetak Kartu
-
-        </button>
-
+        <PrintButton />
 
       </div>
 
@@ -103,17 +97,18 @@ export default async function PrintCards() {
       >
 
 
+
       {
 
         cards.map((card)=>{
 
 
           const number =
-            card.serial.match(/\d+$/)?.[0] || '000'
+          card.serial.match(/\d+$/)?.[0] || '000'
 
 
           const display =
-            number.slice(-3)
+          number.slice(-3)
 
 
 
@@ -144,11 +139,11 @@ export default async function PrintCards() {
 
                 src={`/api/qr/${card.serial}`}
 
-                alt={card.serial}
-
                 width="160"
 
                 height="160"
+
+                alt={card.serial}
 
               />
 
@@ -190,5 +185,6 @@ export default async function PrintCards() {
     </main>
 
   )
+
 
 }
