@@ -4,11 +4,13 @@ import { createClient } from '../../../../lib/supabase/server'
 import { supabaseAdmin } from '../../../../lib/supabase/admin'
 
 export async function POST(req) {
+
   const sb = await createClient()
 
   const {
     data: { user },
   } = await sb.auth.getUser()
+
 
   if (!user) {
     return NextResponse.json(
@@ -33,26 +35,37 @@ export async function POST(req) {
   }
 
 
-  const { count = 1, prefix = 'NFC', start = null } =
-    await req.json().catch(() => ({}))
+
+  const {
+    count = 1,
+    prefix = 'NFC',
+    start = null
+  } = await req.json().catch(() => ({}))
+
 
 
   if (!Number.isInteger(count) || count < 1 || count > 5000) {
+
     return NextResponse.json(
       { error: 'Jumlah 1-5000.' },
       { status: 400 }
     )
+
   }
+
 
 
   const base =
     (prefix || 'NFC')
       .replace(/[^A-Z0-9_-]/gi, '')
       .toUpperCase()
-      .slice(0, 10) || 'NFC'
+      .slice(0, 10)
+      || 'NFC'
+
 
 
   let n = Number(start) || 0
+
 
 
   if (n < 1) {
@@ -63,16 +76,23 @@ export async function POST(req) {
       .like('serial', `${base}-%`)
 
 
-    const numbers = existing
-      .map((item) => {
-        const match = item.serial.match(/(\d+)$/)
-        return match ? Number(match[1]) : 0
-      })
+
+    const numbers = existing.map((item) => {
+
+      const match = item.serial.match(/(\d+)$/)
+
+      return match
+        ? Number(match[1])
+        : 0
+
+    })
+
 
 
     n = numbers.length
       ? Math.max(...numbers) + 1
       : 1
+
   }
 
 
@@ -80,9 +100,16 @@ export async function POST(req) {
   const rows = Array.from(
     { length: count },
     (_, i) => ({
-      serial: `${base}-${String(n + i).padStart(6, '0')}`,
-      setup_token: crypto.randomBytes(18).toString('hex'),
-      status: 'UNASSIGNED',
+
+      serial:
+        `${base}-${String(n + i).padStart(6, '0')}`,
+
+      setup_token:
+        crypto.randomBytes(18).toString('hex'),
+
+      status:
+        'UNASSIGNED',
+
     })
   )
 
@@ -91,14 +118,17 @@ export async function POST(req) {
   const { data, error } = await supabaseAdmin
     .from('cards')
     .insert(rows)
-    .select('serial,setup_token')
+    .select('serial,setup_token,status')
+
 
 
   if (error) {
+
     return NextResponse.json(
       { error: error.message },
       { status: 400 }
     )
+
   }
 
 
@@ -111,27 +141,44 @@ export async function POST(req) {
 
   return NextResponse.json({
 
-    created: data.length,
-
-    firstSerial: data[0].serial,
-
-    lastSerial: data[data.length - 1].serial,
+    created:
+      data.length,
 
 
-    cards: data.map((x) => ({
+    firstSerial:
+      data[0]?.serial,
 
-      serial: x.serial,
 
-      setup_url:
-        `${app}/setup/${x.serial}?token=${x.setup_token}`,
+    lastSerial:
+      data[data.length - 1]?.serial,
 
-      qr_url:
-        `${app}/r/${x.serial}?method=qr`,
 
-      nfc_customer_url:
-        `${app}/r/${x.serial}?method=nfc`,
+    cards:
 
-    }))
+      data.map((x) => ({
+
+        serial:
+          x.serial,
+
+
+        status:
+          x.status,
+
+
+        setup_url:
+          `${app}/setup/${x.serial}?token=${x.setup_token}`,
+
+
+        qr_url:
+          `${app}/r/${x.serial}?method=qr`,
+
+
+        nfc_customer_url:
+          `${app}/r/${x.serial}?method=nfc`,
+
+
+      }))
 
   })
+
 }

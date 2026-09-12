@@ -136,7 +136,7 @@ export default function Generate() {
                     key={x.serial}
                     className="card"
                     style={{
-                      marginTop:12
+                      marginTop: 12
                     }}
                   >
 
@@ -147,6 +147,7 @@ export default function Generate() {
 
                     <p>
                       Status:
+                      {' '}
                       {x.status || 'UNASSIGNED'}
                     </p>
 
@@ -156,7 +157,7 @@ export default function Generate() {
                       <br />
 
                       <code>
-                        {x.nfc_customer_url}
+                        {x.nfc_customer_url || x.nfc_url || '-'}
                       </code>
                     </p>
 
@@ -166,7 +167,7 @@ export default function Generate() {
                       <br />
 
                       <code>
-                        {x.qr_url}
+                        {x.qr_url || '-'}
                       </code>
                     </p>
 
@@ -176,7 +177,7 @@ export default function Generate() {
                       <br />
 
                       <code>
-                        {x.setup_url}
+                        {x.setup_url || '-'}
                       </code>
                     </p>
 
