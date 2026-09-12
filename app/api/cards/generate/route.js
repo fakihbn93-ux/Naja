@@ -17,11 +17,13 @@ export async function POST(req) {
     )
   }
 
+
   const { data: profile } = await sb
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .maybeSingle()
+
 
   if (profile?.role !== 'admin') {
     return NextResponse.json(
@@ -30,8 +32,10 @@ export async function POST(req) {
     )
   }
 
+
   const { count = 1, prefix = 'NFC', start = null } =
     await req.json().catch(() => ({}))
+
 
   if (!Number.isInteger(count) || count < 1 || count > 5000) {
     return NextResponse.json(
@@ -40,26 +44,38 @@ export async function POST(req) {
     )
   }
 
+
   const base =
     (prefix || 'NFC')
       .replace(/[^A-Z0-9_-]/gi, '')
       .toUpperCase()
       .slice(0, 10) || 'NFC'
 
+
   let n = Number(start) || 0
 
+
   if (n < 1) {
-    const { data: last } = await supabaseAdmin
+
+    const { data: existing = [] } = await supabaseAdmin
       .from('cards')
       .select('serial')
       .like('serial', `${base}-%`)
-      .order('serial', { ascending: false })
-      .limit(1)
-      .maybeSingle()
 
-    const m = last?.serial?.match(/(\d+)$/)
-    n = m ? Number(m[1]) + 1 : 1
+
+    const numbers = existing
+      .map((item) => {
+        const match = item.serial.match(/(\d+)$/)
+        return match ? Number(match[1]) : 0
+      })
+
+
+    n = numbers.length
+      ? Math.max(...numbers) + 1
+      : 1
   }
+
+
 
   const rows = Array.from(
     { length: count },
@@ -70,10 +86,13 @@ export async function POST(req) {
     })
   )
 
+
+
   const { data, error } = await supabaseAdmin
     .from('cards')
     .insert(rows)
     .select('serial,setup_token')
+
 
   if (error) {
     return NextResponse.json(
@@ -82,19 +101,37 @@ export async function POST(req) {
     )
   }
 
+
+
   const app =
     process.env.NEXT_PUBLIC_APP_URL ||
     new URL(req.url).origin
 
+
+
   return NextResponse.json({
+
     created: data.length,
+
     firstSerial: data[0].serial,
+
     lastSerial: data[data.length - 1].serial,
+
+
     cards: data.map((x) => ({
+
       serial: x.serial,
-      setup_url: `${app}/setup/${x.serial}?token=${x.setup_token}`,
-      qr_url: `${app}/r/${x.serial}?method=qr`,
-      nfc_customer_url: `${app}/r/${x.serial}?method=nfc`,
-    })),
+
+      setup_url:
+        `${app}/setup/${x.serial}?token=${x.setup_token}`,
+
+      qr_url:
+        `${app}/r/${x.serial}?method=qr`,
+
+      nfc_customer_url:
+        `${app}/r/${x.serial}?method=nfc`,
+
+    }))
+
   })
 }
