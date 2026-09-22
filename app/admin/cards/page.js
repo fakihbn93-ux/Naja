@@ -1,11 +1,11 @@
 import { requireAdmin } from '../../../lib/auth/admin'
-import GenerateForm from './GenerateForm'
+import CardsDashboard from './CardsDashboard'
 
 
 export const dynamic = 'force-dynamic'
 
 
-export default async function GeneratePage(){
+export default async function CardsPage(){
 
 
   const auth = await requireAdmin()
@@ -32,10 +32,9 @@ export default async function GeneratePage(){
 
 
 
-
   return (
 
-    <GenerateForm />
+    <CardsDashboard />
 
   )
 

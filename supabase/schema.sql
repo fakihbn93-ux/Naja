@@ -20,7 +20,7 @@ create table if not exists cards (
   id uuid primary key default gen_random_uuid(),
   serial text unique not null,
   setup_token text unique,
-  status text not null default 'UNASSIGNED' check (status in ('UNASSIGNED','ACTIVE','INACTIVE','LOST','REPLACED')),
+  status text not null default 'UNASSIGNED' check (status in ('UNASSIGNED','ACTIVE','LOST')),
   business_id uuid references businesses(id) on delete set null,
   activated_at timestamptz,
   created_at timestamptz not null default now()

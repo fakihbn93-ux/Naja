@@ -1,43 +1,74 @@
 export default async function Success({searchParams}) {
 
+
   const sp = await searchParams
 
-  const serial = sp?.serial || '-'
+
+  const cardNumber =
+    sp?.card || '-'
 
 
   return (
 
     <main className="wrap">
 
-      <div 
+
+      <div
+
         className="card"
+
         style={{
+
           maxWidth:600,
+
           margin:'40px auto',
+
           textAlign:'center'
+
         }}
+
       >
 
+
         <h1>
+
           ✅ Kartu Berhasil Aktif
+
         </h1>
 
 
+
+
         <p>
+
           Kartu:
-          <b> {serial}</b>
+
+          <b>
+            {' '}
+            {cardNumber}
+          </b>
+
         </p>
+
+
 
 
         <p className="muted">
 
           Kartu NFC sekarang siap digunakan.
+
+          <br />
+
           Tempelkan kartu ke HP pelanggan untuk membuka Google Review.
+
 
         </p>
 
 
+
+
       </div>
+
 
     </main>
 
