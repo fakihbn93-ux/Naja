@@ -521,7 +521,7 @@ label,
 
 config.width / 2,
 
-config.height * 0.10
+config.height * 0.30
 
 )
 

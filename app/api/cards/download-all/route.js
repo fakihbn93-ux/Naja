@@ -718,7 +718,7 @@ label,
 
 width/2,
 
-height*0.10
+height*0.30
 
 )
 
