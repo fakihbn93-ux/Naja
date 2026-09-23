@@ -144,7 +144,7 @@ export async function GET(req, { params }) {
     // REDIS IMAGE CACHE READ
     // ======================
     const cacheKey =
-      `preview:${cleanSerial}:${resolution}`
+      `preview-v2:${cleanSerial}:${resolution}`
 
     try {
       const cached =
@@ -229,13 +229,17 @@ export async function GET(req, { params }) {
     )
 
     // Label bawah tetap dari serial fisik
-    const number =
-       `GA-${card.serial
+    const numberPart =
+      card.serial
         .replace('NFC-', '')
-        .slice(-3)}`
+        .slice(-3)
+
+
+    const number =
+      `GA-${numberPart}`
 
     ctx.fillStyle = '#111111'
-    ctx.font = `bold ${config.fontSize}px Arial`
+    ctx.font = `bold ${config.fontSize}px sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 
