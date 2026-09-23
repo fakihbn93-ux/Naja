@@ -810,7 +810,7 @@ export async function GET(req){
 
 
       ctx.font =
-        `700 ${fontSize}px Arial`
+        `700 ${fontSize}px DejaVu Sans`
 
 
 
@@ -820,7 +820,7 @@ export async function GET(req){
 
 
       ctx.textBaseline =
-        'middle'
+        'alphabetic'
 
 
 
@@ -832,7 +832,7 @@ export async function GET(req){
 
         width / 2,
 
-        height * 0.78
+        height * 0.82
 
       )
 

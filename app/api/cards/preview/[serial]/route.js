@@ -144,7 +144,7 @@ export async function GET(req, { params }) {
     // REDIS IMAGE CACHE READ
     // ======================
     const cacheKey =
-      `preview-v3:${cleanSerial}:${resolution}`
+      `preview-v4:${cleanSerial}:${resolution}`
 
     try {
       const cached =
