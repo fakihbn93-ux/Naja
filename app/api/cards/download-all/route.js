@@ -54,7 +54,7 @@ function getSizeConfig(size){
 
       qrSize:520,
 
-      fontSize:30,
+      fontSize:40,
 
       radius:40,
 
@@ -80,7 +80,7 @@ function getSizeConfig(size){
 
       qrSize:2080,
 
-      fontSize:120,
+      fontSize:160,
 
       radius:160,
 
@@ -101,7 +101,7 @@ function getSizeConfig(size){
 
     qrSize:1040,
 
-    fontSize:60,
+    fontSize:80,
 
     radius:80,
 

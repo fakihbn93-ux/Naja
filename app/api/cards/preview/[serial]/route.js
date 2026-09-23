@@ -98,7 +98,7 @@ function getConfig(resolution){
 
     qrSize:1040,
 
-    fontSize:60,
+    fontSize:80,
 
     border:8
 
