@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
 import path from 'path'
+
 import {
   createCanvas,
   registerFont
@@ -28,9 +29,10 @@ registerFont(
     'public/fonts/SpaceGrotesk-Medium.ttf'
   ),
   {
-    family: 'SpaceGrotesk'
+    family:'SpaceGrotesk'
   }
 )
+
 
 
 
@@ -53,13 +55,15 @@ function getConfig(resolution){
 
       qrSize:520,
 
-      fontSize:70,
+      fontSize:55,
 
       border:4
 
     }
 
   }
+
+
 
 
 
@@ -75,13 +79,15 @@ function getConfig(resolution){
 
       qrSize:2080,
 
-      fontSize:280,
+      fontSize:220,
 
       border:12
 
     }
 
   }
+
+
 
 
 
@@ -92,8 +98,7 @@ function getConfig(resolution){
 
     qrSize:1040,
 
-    // ukuran kode fisik
-    fontSize:150,
+    fontSize:110,
 
     border:8
 
@@ -189,7 +194,6 @@ e
 
 
 
-
 const {serial}=await params
 
 
@@ -209,11 +213,12 @@ status:400
 
 
 
+
+
 const cleanSerial =
 serial
 .trim()
 .toUpperCase()
-
 
 
 
@@ -263,12 +268,30 @@ status:500
 
 
 
+
 if(!card){
 
 return new NextResponse(
 'Kartu tidak ditemukan',
 {
 status:404
+}
+)
+
+}
+
+
+
+
+
+
+
+if(!card.public_id){
+
+return new NextResponse(
+'Public ID kartu tidak tersedia',
+{
+status:400
 }
 )
 
@@ -297,6 +320,7 @@ new URL(req.url)
 
 
 
+
 const config =
 getConfig(resolution)
 
@@ -311,7 +335,8 @@ getConfig(resolution)
 // ===============================
 
 const cacheKey =
-`preview-v6:${cleanSerial}:${resolution}`
+`preview-v7:${cleanSerial}:${resolution}`
+
 
 
 
@@ -326,12 +351,21 @@ await redis.getBuffer(cacheKey)
 if(cached){
 
 return new NextResponse(
+
 cached,
+
 {
+
 headers:{
-'Content-Type':'image/png'
+
+'Content-Type':'image/png',
+
+'X-Cache':'HIT'
+
 }
+
 }
+
 )
 
 }
@@ -345,10 +379,6 @@ console.log(
 )
 
 }
-
-
-
-
 
 
 
@@ -373,17 +403,23 @@ const qrUrl =
 
 
 
-
 const canvas =
+
 createCanvas(
+
 config.width,
+
 config.height
+
 )
 
 
-const ctx =
-canvas.getContext('2d')
 
+
+
+const ctx =
+
+canvas.getContext('2d')
 
 
 
@@ -400,11 +436,17 @@ ctx.fillStyle='#ffffff'
 
 
 ctx.fillRect(
+
 0,
+
 0,
+
 config.width,
+
 config.height
+
 )
+
 
 
 
@@ -419,29 +461,37 @@ config.height
 
 ctx.strokeStyle='#e5e7eb'
 
-ctx.lineWidth=config.border
+
+ctx.lineWidth =
+config.border
+
+
 
 
 
 ctx.beginPath()
 
 
+
 ctx.roundRect(
 
-config.width*0.04,
+config.width * 0.04,
 
-config.height*0.04,
+config.height * 0.04,
 
-config.width*0.92,
+config.width * 0.92,
 
-config.height*0.92,
+config.height * 0.92,
 
-config.width*0.04
+config.width * 0.04
 
 )
 
 
+
 ctx.stroke()
+
+
 
 
 
@@ -455,10 +505,15 @@ ctx.stroke()
 
 
 const qrCanvas =
+
 createCanvas(
+
 config.qrSize,
+
 config.qrSize
+
 )
+
 
 
 
@@ -497,19 +552,22 @@ light:'#ffffff'
 
 
 
+
 ctx.drawImage(
 
 qrCanvas,
 
 (config.width-config.qrSize)/2,
 
-config.height*0.16,
+config.height * 0.16,
 
 config.qrSize,
 
 config.qrSize
 
 )
+
+
 
 
 
@@ -538,11 +596,17 @@ card.serial
 
 
 
-ctx.fillStyle='#111111'
+ctx.fillStyle='#374151'
+
+
+
 
 
 ctx.font =
-`${config.fontSize}px SpaceGrotesk`
+
+`italic ${config.fontSize}px SpaceGrotesk`
+
+
 
 
 
@@ -555,15 +619,17 @@ ctx.textBaseline='middle'
 
 
 
+
 ctx.fillText(
 
 label,
 
-config.width/2,
+config.width / 2,
 
-config.height*0.80
+config.height * 0.76
 
 )
+
 
 
 
@@ -574,8 +640,11 @@ config.height*0.80
 
 
 const buffer =
+
 canvas.toBuffer(
+
 'image/png'
+
 )
 
 
@@ -584,9 +653,14 @@ canvas.toBuffer(
 
 
 
+
+// ===============================
 // CACHE SAVE
+// ===============================
+
 
 try{
+
 
 await redis.set(
 
@@ -596,19 +670,25 @@ buffer,
 
 'EX',
 
-60*60*6
+60 * 60 * 6
 
 )
+
 
 
 }catch(e){
 
 console.error(
+
 'CACHE WRITE ERROR',
+
 e
+
 )
 
 }
+
+
 
 
 
@@ -645,13 +725,15 @@ headers:{
 
 
 
-
 }catch(error){
 
 
 console.error(
-'PREVIEW ERROR',
+
+'PREVIEW ERROR:',
+
 error
+
 )
 
 

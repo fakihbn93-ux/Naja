@@ -1,5 +1,6 @@
 import QRCode from 'qrcode'
 import path from 'path'
+
 import {
   createCanvas,
   registerFont
@@ -34,6 +35,8 @@ registerFont(
 
 
 
+
+
 function getConfig(resolution) {
 
   const key =
@@ -51,11 +54,12 @@ function getConfig(resolution) {
 
       qrSize:520,
 
-      fontSize:70
+      fontSize:55
 
     }
 
   }
+
 
 
 
@@ -72,7 +76,7 @@ function getConfig(resolution) {
 
       qrSize:2080,
 
-      fontSize:280
+      fontSize:220
 
     }
 
@@ -89,11 +93,13 @@ function getConfig(resolution) {
 
     qrSize:1040,
 
-    fontSize:150
+    fontSize:110
 
   }
 
 }
+
+
 
 
 
@@ -109,6 +115,8 @@ try {
 
 const auth =
 await requireAdmin()
+
+
 
 
 
@@ -131,6 +139,8 @@ status:auth.status
 
 const {serial} =
 await params
+
+
 
 
 
@@ -164,7 +174,6 @@ serial
 
 
 
-
 const {
 data:card,
 error
@@ -190,6 +199,7 @@ cleanSerial
 
 
 
+
 if(error){
 
 return new NextResponse(
@@ -206,6 +216,7 @@ status:500
 
 
 
+
 if(!card){
 
 return new NextResponse(
@@ -216,6 +227,7 @@ status:404
 )
 
 }
+
 
 
 
@@ -239,10 +251,10 @@ status:400
 
 
 
-
 const {searchParams}
 =
 new URL(req.url)
+
 
 
 
@@ -255,6 +267,7 @@ searchParams.get('resolution')
 'hd'
 )
 .toLowerCase()
+
 
 
 
@@ -282,7 +295,6 @@ new URL(req.url).origin
 
 
 
-
 const qrUrl =
 
 `${baseUrl}/r/${card.public_id}?method=qr`
@@ -298,6 +310,9 @@ createCanvas(
 config.width,
 config.height
 )
+
+
+
 
 
 
@@ -320,10 +335,15 @@ ctx.fillStyle='#ffffff'
 
 
 ctx.fillRect(
+
 0,
+
 0,
+
 config.width,
+
 config.height
+
 )
 
 
@@ -343,6 +363,7 @@ ctx.strokeStyle='#e5e7eb'
 
 ctx.lineWidth =
 config.width * 0.004
+
 
 
 
@@ -382,9 +403,14 @@ ctx.stroke()
 
 const qrCanvas =
 createCanvas(
+
 config.qrSize,
+
 config.qrSize
+
 )
+
+
 
 
 
@@ -403,7 +429,6 @@ errorCorrectionLevel:'H',
 margin:1,
 
 width:config.qrSize,
-
 
 color:{
 
@@ -444,6 +469,7 @@ config.qrSize
 
 
 
+
 // =============================
 // CARD ID LABEL
 // =============================
@@ -462,12 +488,19 @@ const label =
 
 
 
-ctx.fillStyle='#111111'
+ctx.fillStyle='#374151'
+
+
+
 
 
 
 ctx.font =
-`${config.fontSize}px SpaceGrotesk`
+
+`italic ${config.fontSize}px SpaceGrotesk`
+
+
+
 
 
 
@@ -488,9 +521,10 @@ label,
 
 config.width / 2,
 
-config.height * 0.80
+config.height * 0.76
 
 )
+
 
 
 
@@ -499,9 +533,11 @@ config.height * 0.80
 
 
 const buffer =
+
 canvas.toBuffer(
 'image/png'
 )
+
 
 
 
@@ -517,20 +553,22 @@ buffer,
 
 headers:{
 
-'Content-Type':'image/png',
+'Content-Type':
+'image/png',
+
 
 'Content-Disposition':
 `attachment; filename="${label}.png"`,
 
-'Cache-Control':'no-store'
+
+'Cache-Control':
+'no-store'
 
 }
 
 }
 
 )
-
-
 
 
 
@@ -542,9 +580,14 @@ headers:{
 
 
 console.error(
+
 'DOWNLOAD ONE ERROR:',
+
 error
+
 )
+
+
 
 
 

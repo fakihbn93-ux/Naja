@@ -54,7 +54,7 @@ function getSizeConfig(size){
 
       qrSize:520,
 
-      fontSize:70,
+      fontSize:55,
 
       radius:40,
 
@@ -80,7 +80,7 @@ function getSizeConfig(size){
 
       qrSize:2080,
 
-      fontSize:280,
+      fontSize:220,
 
       radius:160,
 
@@ -101,7 +101,7 @@ function getSizeConfig(size){
 
     qrSize:1040,
 
-    fontSize:150,
+    fontSize:110,
 
     radius:80,
 
@@ -226,7 +226,6 @@ function getCardNumber(serial){
 
 
 
-
 function getSerialNumberValue(serial){
 
   const match =
@@ -240,8 +239,6 @@ function getSerialNumberValue(serial){
     : 0
 
 }
-
-
 
 
 
@@ -271,6 +268,8 @@ status:auth.status
 )
 
 }
+
+
 
 
 
@@ -317,7 +316,6 @@ status:429
 
 
 
-
 const {searchParams}
 =
 new URL(req.url)
@@ -353,7 +351,6 @@ searchParams.get('resolution')
 
 
 
-
 const allowedResolutions=[
 
 'standard',
@@ -378,10 +375,6 @@ status:400
 )
 
 }
-
-
-
-
 
 
 
@@ -513,6 +506,8 @@ new URL(req.url).origin
 
 
 
+
+
 const zipFile =
 new JSZip()
 
@@ -526,6 +521,8 @@ const folderName =
 
 const zipFolder =
 zipFile.folder(folderName)
+
+
 
 
 
@@ -551,6 +548,8 @@ const qrUrl =
 
 
 
+
+
 const canvas =
 createCanvas(
 width,
@@ -566,6 +565,7 @@ canvas.getContext('2d')
 
 
 
+
 ctx.fillStyle='#ffffff'
 
 
@@ -575,6 +575,8 @@ ctx.fillRect(
 width,
 height
 )
+
+
 
 
 
@@ -620,11 +622,13 @@ ctx.stroke()
 
 
 
+
 const qrCanvas =
 createCanvas(
 qrSize,
 qrSize
 )
+
 
 
 
@@ -663,6 +667,7 @@ light:'#ffffff'
 
 
 
+
 ctx.drawImage(
 
 qrCanvas,
@@ -690,11 +695,11 @@ qrSize
 // ===========================
 
 
-ctx.fillStyle='#111111'
+ctx.fillStyle='#374151'
 
 
 ctx.font =
-`${fontSize}px SpaceGrotesk`
+`italic ${fontSize}px SpaceGrotesk`
 
 
 ctx.textAlign='center'
@@ -713,7 +718,7 @@ label,
 
 width/2,
 
-height*0.80
+height*0.76
 
 )
 
@@ -742,6 +747,7 @@ canvas.toBuffer('image/png')
 
 
 
+
 const zipBuffer =
 
 await zipFile.generateAsync({
@@ -757,6 +763,7 @@ level:9
 }
 
 })
+
 
 
 
@@ -798,12 +805,17 @@ String(zipBuffer.length),
 
 
 
+
+
 }catch(err){
 
 
 console.error(
+
 'DOWNLOAD ALL PNG ERROR:',
+
 err
+
 )
 
 
