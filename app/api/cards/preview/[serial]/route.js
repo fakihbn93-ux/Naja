@@ -17,65 +17,85 @@ export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
 
-// ===============================
-// REGISTER FONT SERVER
-// ===============================
+
+// =====================================
+// REGISTER FONT
+// =====================================
 
 registerFont(
   path.join(
     process.cwd(),
-    'public/fonts/DejaVuSans-Bold.ttf'
+    'public/fonts/SpaceGrotesk-Medium.ttf'
   ),
   {
-    family: 'DejaVuBold'
+    family: 'SpaceGrotesk'
   }
 )
 
 
 
-function getConfig(resolution) {
+
+
+function getConfig(resolution){
 
   const key =
     String(resolution || 'hd')
-      .toLowerCase()
+    .toLowerCase()
 
 
-  if (key === 'standard') {
+
+  if(key === 'standard'){
 
     return {
+
       width:1000,
       height:1200,
+
       qrSize:520,
-      fontSize:90,
-      border:4,
+
+      fontSize:70,
+
+      border:4
+
     }
 
   }
 
 
-  if (
+
+  if(
     key === 'ultra' ||
     key === 'print'
-  ) {
+  ){
 
     return {
+
       width:4000,
       height:4800,
+
       qrSize:2080,
-      fontSize:360,
-      border:12,
+
+      fontSize:280,
+
+      border:12
+
     }
 
   }
+
 
 
   return {
 
     width:2000,
     height:2400,
+
     qrSize:1040,
-    fontSize:180,
-    border:8,
+
+    // ukuran kode fisik
+    fontSize:150,
+
+    border:8
 
   }
 
@@ -83,13 +103,19 @@ function getConfig(resolution) {
 
 
 
-export async function GET(req,{params}) {
 
-try {
+
+
+
+export async function GET(req,{params}){
+
+
+try{
 
 
 const auth =
 await requireAdmin()
+
 
 
 if(auth.error){
@@ -106,7 +132,15 @@ status:auth.status
 
 
 
-try {
+
+
+
+// ===============================
+// RATE LIMIT
+// ===============================
+
+try{
+
 
 const limiter =
 await rateLimit({
@@ -119,6 +153,7 @@ limit:30,
 windowMs:60000
 
 })
+
 
 
 if(!limiter.allowed){
@@ -138,11 +173,12 @@ status:429
 }
 
 
-}catch(redisError){
+
+}catch(e){
 
 console.error(
-'REDIS PREVIEW ERROR:',
-redisError
+'RATE LIMIT ERROR',
+e
 )
 
 }
@@ -151,8 +187,10 @@ redisError
 
 
 
-const {serial} =
-await params
+
+
+
+const {serial}=await params
 
 
 
@@ -169,10 +207,15 @@ status:400
 
 
 
+
+
 const cleanSerial =
 serial
 .trim()
 .toUpperCase()
+
+
+
 
 
 
@@ -200,6 +243,10 @@ cleanSerial
 
 
 
+
+
+
+
 if(error){
 
 return new NextResponse(
@@ -213,10 +260,13 @@ status:500
 
 
 
+
+
+
 if(!card){
 
 return new NextResponse(
-'Kartu tidak ditemukan.',
+'Kartu tidak ditemukan',
 {
 status:404
 }
@@ -226,96 +276,21 @@ status:404
 
 
 
-if(!card.public_id){
 
-return new NextResponse(
-'Public ID kartu tidak ditemukan.',
-{
-status:500
-}
-)
-
-}
-
-
-
-
-const {searchParams}
-=
-new URL(req.url)
 
 
 
 const resolution =
+
 (
-searchParams.get('resolution')
+new URL(req.url)
+.searchParams
+.get('resolution')
 ||
 'hd'
 )
+
 .toLowerCase()
-
-
-
-const allowed=[
-'standard',
-'hd',
-'ultra',
-'print'
-]
-
-
-
-if(!allowed.includes(resolution)){
-
-
-return new NextResponse(
-'Resolusi tidak valid.',
-{
-status:400
-}
-)
-
-}
-
-
-
-
-
-const cacheKey =
-`preview-v5:${cleanSerial}:${resolution}`
-
-
-
-try {
-
-
-const cached =
-await redis.getBuffer(cacheKey)
-
-
-if(cached){
-
-return new NextResponse(
-cached,
-{
-headers:{
-'Content-Type':'image/png',
-'X-Cache':'HIT'
-}
-}
-)
-
-}
-
-
-}catch(e){
-
-console.error(
-'CACHE ERROR',
-e
-)
-
-}
 
 
 
@@ -329,7 +304,56 @@ getConfig(resolution)
 
 
 
+
+
+// ===============================
+// CACHE
+// ===============================
+
+const cacheKey =
+`preview-v6:${cleanSerial}:${resolution}`
+
+
+
+try{
+
+
+const cached =
+await redis.getBuffer(cacheKey)
+
+
+
+if(cached){
+
+return new NextResponse(
+cached,
+{
+headers:{
+'Content-Type':'image/png'
+}
+}
+)
+
+}
+
+
+
+}catch(e){
+
+console.log(
+'CACHE MISS'
+)
+
+}
+
+
+
+
+
+
+
 const baseUrl =
+
 process.env.NEXT_PUBLIC_APP_URL
 ||
 new URL(req.url).origin
@@ -337,8 +361,14 @@ new URL(req.url).origin
 
 
 
+
+
 const qrUrl =
+
 `${baseUrl}/r/${card.public_id}?method=qr`
+
+
+
 
 
 
@@ -351,7 +381,6 @@ config.height
 )
 
 
-
 const ctx =
 canvas.getContext('2d')
 
@@ -359,9 +388,16 @@ canvas.getContext('2d')
 
 
 
-// background
+
+
+
+// ===============================
+// BACKGROUND
+// ===============================
+
 
 ctx.fillStyle='#ffffff'
+
 
 ctx.fillRect(
 0,
@@ -374,15 +410,21 @@ config.height
 
 
 
-// border
+
+
+// ===============================
+// BORDER
+// ===============================
+
 
 ctx.strokeStyle='#e5e7eb'
 
-ctx.lineWidth=
-config.border
+ctx.lineWidth=config.border
+
 
 
 ctx.beginPath()
+
 
 ctx.roundRect(
 
@@ -398,19 +440,27 @@ config.width*0.04
 
 )
 
+
 ctx.stroke()
 
 
 
 
 
-// QR
+
+
+// ===============================
+// QR CODE
+// ===============================
+
 
 const qrCanvas =
 createCanvas(
 config.qrSize,
 config.qrSize
 )
+
+
 
 
 
@@ -428,14 +478,20 @@ margin:1,
 
 width:config.qrSize,
 
+
 color:{
+
 dark:'#000000',
+
 light:'#ffffff'
+
 }
 
 }
 
 )
+
+
 
 
 
@@ -461,19 +517,23 @@ config.qrSize
 
 
 
+
 // ===============================
-// LABEL
+// CARD CODE
 // ===============================
 
 
-const number =
+const label =
+
 `GA-${
-
 card.serial
 .replace('NFC-','')
 .slice(-3)
-
 }`
+
+
+
+
 
 
 
@@ -482,11 +542,12 @@ ctx.fillStyle='#111111'
 
 
 ctx.font =
-`${config.fontSize}px DejaVuBold`
+`${config.fontSize}px SpaceGrotesk`
 
 
 
 ctx.textAlign='center'
+
 
 ctx.textBaseline='middle'
 
@@ -496,13 +557,16 @@ ctx.textBaseline='middle'
 
 ctx.fillText(
 
-number,
+label,
 
 config.width/2,
 
-config.height*0.78
+config.height*0.80
 
 )
+
+
+
 
 
 
@@ -518,7 +582,11 @@ canvas.toBuffer(
 
 
 
-try {
+
+
+// CACHE SAVE
+
+try{
 
 await redis.set(
 
@@ -547,6 +615,7 @@ e
 
 
 
+
 return new NextResponse(
 
 buffer,
@@ -559,15 +628,19 @@ headers:{
 
 'Content-Type':'image/png',
 
-'X-Cache':'MISS',
+'Cache-Control':'no-store',
 
-'Cache-Control':'no-store'
+'X-Cache':'MISS'
 
 }
 
 }
 
 )
+
+
+
+
 
 
 
@@ -577,9 +650,10 @@ headers:{
 
 
 console.error(
-'PREVIEW CARD ERROR:',
+'PREVIEW ERROR',
 error
 )
+
 
 
 return new NextResponse(
