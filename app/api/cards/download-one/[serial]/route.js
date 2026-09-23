@@ -76,7 +76,7 @@ function getConfig(resolution) {
 
       qrSize:2080,
 
-      fontSize:220
+      fontSize:120
 
     }
 
@@ -93,7 +93,7 @@ function getConfig(resolution) {
 
     qrSize:1040,
 
-    fontSize:110
+    fontSize:60
 
   }
 
@@ -521,7 +521,7 @@ label,
 
 config.width / 2,
 
-config.height * 0.76
+config.height * 0.10
 
 )
 
