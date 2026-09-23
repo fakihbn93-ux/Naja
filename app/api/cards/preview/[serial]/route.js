@@ -335,7 +335,7 @@ getConfig(resolution)
 // ===============================
 
 const cacheKey =
-`preview-v1:${cleanSerial}:${resolution}`
+`preview-v13:${cleanSerial}:${resolution}`
 
 
 
