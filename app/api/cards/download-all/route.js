@@ -1,6 +1,12 @@
 import JSZip from 'jszip'
 import QRCode from 'qrcode'
-import { createCanvas } from 'canvas'
+import path from 'path'
+
+import {
+  createCanvas,
+  registerFont
+} from 'canvas'
+
 import { NextResponse } from 'next/server'
 
 import { supabaseAdmin } from '../../../../lib/supabase/admin'
@@ -13,7 +19,25 @@ export const dynamic = 'force-dynamic'
 
 
 
-function getSizeConfig(size) {
+// =====================================
+// REGISTER FONT
+// =====================================
+
+registerFont(
+  path.join(
+    process.cwd(),
+    'public/fonts/SpaceGrotesk-Medium.ttf'
+  ),
+  {
+    family:'SpaceGrotesk'
+  }
+)
+
+
+
+
+
+function getSizeConfig(size){
 
   const key =
     String(size || 'hd')
@@ -27,14 +51,20 @@ function getSizeConfig(size) {
 
       width:1000,
       height:1200,
+
       qrSize:520,
-      fontSize:90,
+
+      fontSize:70,
+
       radius:40,
-      strokeWidth:4,
+
+      strokeWidth:4
 
     }
 
   }
+
+
 
 
 
@@ -47,10 +77,14 @@ function getSizeConfig(size) {
 
       width:4000,
       height:4800,
+
       qrSize:2080,
-      fontSize:360,
+
+      fontSize:280,
+
       radius:160,
-      strokeWidth:12,
+
+      strokeWidth:12
 
     }
 
@@ -58,18 +92,25 @@ function getSizeConfig(size) {
 
 
 
+
+
   return {
 
     width:2000,
     height:2400,
+
     qrSize:1040,
-    fontSize:180,
+
+    fontSize:150,
+
     radius:80,
-    strokeWidth:8,
+
+    strokeWidth:8
 
   }
 
 }
+
 
 
 
@@ -92,10 +133,12 @@ function drawRoundedRect(
     y
   )
 
+
   ctx.lineTo(
     x + width - radius,
     y
   )
+
 
   ctx.quadraticCurveTo(
     x + width,
@@ -104,10 +147,12 @@ function drawRoundedRect(
     y + radius
   )
 
+
   ctx.lineTo(
     x + width,
     y + height - radius
   )
+
 
   ctx.quadraticCurveTo(
     x + width,
@@ -116,10 +161,12 @@ function drawRoundedRect(
     y + height
   )
 
+
   ctx.lineTo(
     x + radius,
     y + height
   )
+
 
   ctx.quadraticCurveTo(
     x,
@@ -128,10 +175,12 @@ function drawRoundedRect(
     y + height - radius
   )
 
+
   ctx.lineTo(
     x,
     y + radius
   )
+
 
   ctx.quadraticCurveTo(
     x,
@@ -139,6 +188,7 @@ function drawRoundedRect(
     x + radius,
     y
   )
+
 
   ctx.closePath()
 
@@ -157,18 +207,19 @@ function getCardNumber(serial){
       .match(/(\d+)$/)
 
 
+
   const number =
     match
-    ?
-    Number(match[1])
-    :
-    0
+    ? Number(match[1])
+    : 0
+
 
 
   return `GA-${String(number)
     .padStart(3,'0')}`
 
 }
+
 
 
 
@@ -183,13 +234,14 @@ function getSerialNumberValue(serial){
       .match(/(\d+)$/)
 
 
+
   return match
-    ?
-    Number(match[1])
-    :
-    0
+    ? Number(match[1])
+    : 0
 
 }
+
+
 
 
 
@@ -201,760 +253,575 @@ function getSerialNumberValue(serial){
 export async function GET(req){
 
 
-  const auth =
-    await requireAdmin()
+const auth =
+await requireAdmin()
 
 
 
-  if(auth.error){
+if(auth.error){
 
-    return new NextResponse(
+return new NextResponse(
 
-      auth.error,
+auth.error,
 
-      {
-        status:auth.status
-      }
+{
+status:auth.status
+}
 
-    )
+)
 
-  }
+}
 
 
 
 
-  try {
 
+try{
 
-    // ============================
-    // REDIS RATE LIMIT
-    // 10 REQUEST / 5 MENIT
-    // ============================
 
+const limiter =
+await rateLimit({
 
-    const limiter =
-      await rateLimit({
+key:
+`download:${auth.user.id}`,
 
-        key:
-        `download:${auth.user.id}`,
+limit:10,
 
-        limit:10,
+windowMs:5 * 60 * 1000
 
-        windowMs:
-        5 * 60 * 1000
+})
 
-      })
 
 
 
 
-    if(!limiter.allowed){
+if(!limiter.allowed){
 
+return NextResponse.json(
 
-      return NextResponse.json(
+{
+error:
+'Terlalu banyak request download.'
+},
 
-        {
+{
+status:429
+}
 
-          error:
-          'Terlalu banyak request download. Maksimal 10 kali dalam 5 menit.'
+)
 
-        },
+}
 
-        {
 
-          status:429
 
-        }
 
-      )
 
-    }
 
 
+const {searchParams}
+=
+new URL(req.url)
 
 
 
+const start =
+Number(
+searchParams.get('start') || '1'
+)
 
 
-    const {searchParams} =
-      new URL(req.url)
 
+const end =
+Number(
+searchParams.get('end') || '10'
+)
 
 
-    const start =
-      Number(
-        searchParams.get('start') || '1'
-      )
 
 
 
-    const end =
-      Number(
-        searchParams.get('end') || '10'
-      )
+const resolution =
+(
+searchParams.get('resolution')
+||
+'hd'
+)
+.toLowerCase()
 
 
 
 
-    const resolution =
 
-      (
 
-        searchParams.get('resolution') ||
 
-        searchParams.get('size') ||
+const allowedResolutions=[
 
-        'hd'
+'standard',
+'hd',
+'ultra',
+'print'
 
-      )
+]
 
-      .toLowerCase()
 
 
 
+if(
+!allowedResolutions.includes(resolution)
+){
 
+return new NextResponse(
+'Resolusi tidak valid.',
+{
+status:400
+}
+)
 
+}
 
-    if(
-      !Number.isInteger(start) ||
-      !Number.isInteger(end)
-    ){
 
-      return new NextResponse(
 
-        'Nomor awal dan akhir harus berupa angka.',
 
-        {
-          status:400
-        }
 
-      )
 
-    }
 
+const {
+data:allCards,
+error
 
+}=await supabaseAdmin
 
+.from('cards')
 
+.select(
+'serial, public_id'
+)
 
+.order(
+'serial',
+{
+ascending:true
+}
+)
 
-    if(
-      start < 1 ||
-      end < 1 ||
-      end < start
-    ){
 
-      return new NextResponse(
 
-        'Range nomor tidak valid.',
 
-        {
-          status:400
-        }
 
-      )
 
-    }
+if(error){
 
+return new NextResponse(
+error.message,
+{
+status:500
+}
+)
 
+}
 
 
 
 
-    const total =
-      end - start + 1
 
 
 
 
+const selectedCards =
 
-    if(total > 500){
+(allCards || [])
 
+.filter(card=>{
 
-      return new NextResponse(
+const num =
+getSerialNumberValue(
+card.serial
+)
 
-        'Maksimal download 500 kartu per request.',
 
-        {
-          status:400
-        }
+return (
+num >= start &&
+num <= end
+)
 
-      )
+})
 
-    }
+.sort(
 
+(a,b)=>
 
+getSerialNumberValue(a.serial)
+-
+getSerialNumberValue(b.serial)
 
+)
 
 
 
 
-    const allowedResolutions = [
 
-      'standard',
-      'hd',
-      'ultra',
-      'print'
 
-    ]
 
+if(selectedCards.length===0){
 
+return new NextResponse(
+'Kartu tidak ditemukan.',
+{
+status:404
+}
+)
 
+}
 
-    if(
-      !allowedResolutions.includes(
-        resolution
-      )
-    ){
 
-      return new NextResponse(
 
-        'Resolusi tidak valid.',
 
-        {
-          status:400
-        }
 
-      )
 
-    }
 
 
+const {
 
+width,
+height,
+qrSize,
+fontSize,
+radius,
+strokeWidth
 
+}=getSizeConfig(
+resolution
+)
 
 
 
 
-    const {
-      data:allCards,
-      error
 
-    } = await supabaseAdmin
 
-      .from('cards')
 
-      .select('serial, public_id')
 
-      .order(
-        'serial',
-        {
-          ascending:true
-        }
-      )
+const appUrl =
 
+process.env.NEXT_PUBLIC_APP_URL
+||
+new URL(req.url).origin
 
 
 
 
 
-    if(error){
 
-      return new NextResponse(
 
-        error.message,
 
-        {
-          status:500
-        }
+const zipFile =
+new JSZip()
 
-      )
 
-    }
 
+const folderName =
 
+`cards-${String(start).padStart(3,'0')}-${String(end).padStart(3,'0')}`
 
 
 
+const zipFolder =
+zipFile.folder(folderName)
 
 
 
-    const selectedCards =
 
-      (allCards || [])
 
-      .filter(card=>{
 
 
-        const num =
-          getSerialNumberValue(
-            card.serial
-          )
+for(const card of selectedCards){
 
 
-        return (
 
-          num >= start &&
+const label =
+getCardNumber(card.serial)
 
-          num <= end
 
-        )
 
+const qrUrl =
 
-      })
+`${appUrl}/r/${card.public_id}?method=qr`
 
-      .sort(
 
-        (a,b)=>
 
-          getSerialNumberValue(a.serial)
 
-          -
 
-          getSerialNumberValue(b.serial)
 
-      )
+const canvas =
+createCanvas(
+width,
+height
+)
 
 
 
+const ctx =
+canvas.getContext('2d')
 
 
 
 
-    if(selectedCards.length === 0){
 
+ctx.fillStyle='#ffffff'
 
-      return new NextResponse(
 
-        'Kartu tidak ditemukan pada range tersebut.',
+ctx.fillRect(
+0,
+0,
+width,
+height
+)
 
-        {
-          status:404
-        }
 
-      )
 
-    }
 
 
 
+drawRoundedRect(
 
+ctx,
 
+width*0.06,
 
+height*0.04,
 
+width*0.88,
 
-    const {
+height*0.92,
 
-      width,
-      height,
-      qrSize,
-      fontSize,
-      radius,
-      strokeWidth
+radius
 
-    } = getSizeConfig(
-      resolution
-    )
+)
 
 
 
+ctx.fill()
 
 
 
+ctx.lineWidth =
+strokeWidth
 
-    const appUrl =
 
-      process.env.NEXT_PUBLIC_APP_URL ||
+ctx.strokeStyle =
+'#e5e7eb'
 
-      new URL(req.url).origin
 
+ctx.stroke()
 
 
 
 
 
-    const zipFile =
-      new JSZip()
 
 
 
+const qrCanvas =
+createCanvas(
+qrSize,
+qrSize
+)
 
 
 
-    const folderName =
 
-      `cards-${String(start).padStart(3,'0')}-${String(end).padStart(3,'0')}`
 
 
+await QRCode.toCanvas(
 
+qrCanvas,
 
+qrUrl,
 
+{
 
-    const zipFolder =
-      zipFile.folder(folderName)
+errorCorrectionLevel:'H',
 
+margin:1,
 
+width:qrSize,
 
+color:{
 
+dark:'#000000',
 
+light:'#ffffff'
 
-    if(!zipFolder){
+}
 
+}
 
-      return new NextResponse(
+)
 
-        'Gagal membuat folder ZIP.',
 
-        {
-          status:500
-        }
 
-      )
 
-    }
 
 
 
+ctx.drawImage(
 
+qrCanvas,
 
+(width-qrSize)/2,
 
+height*0.16,
 
+qrSize,
 
-    for(const card of selectedCards){
+qrSize
 
+)
 
 
-      const serial =
-        card.serial
 
 
-      const publicId =
-        card.public_id
 
 
 
-      const label =
-        getCardNumber(serial)
 
 
+// ===========================
+// CARD LABEL
+// ===========================
 
-      const qrUrl =
-        `${appUrl}/r/${publicId}?method=qr`
 
+ctx.fillStyle='#111111'
 
 
+ctx.font =
+`${fontSize}px SpaceGrotesk`
 
 
-      const canvas =
-        createCanvas(
+ctx.textAlign='center'
 
-          width,
 
-          height
+ctx.textBaseline='middle'
 
-        )
 
 
 
 
-      const ctx =
-        canvas.getContext('2d')
 
+ctx.fillText(
 
+label,
 
+width/2,
 
+height*0.80
 
-      ctx.fillStyle =
-        '#ffffff'
+)
 
 
-      ctx.fillRect(
 
-        0,
 
-        0,
 
-        width,
 
-        height
 
-      )
+zipFolder.file(
 
+`${label}.png`,
 
+canvas.toBuffer('image/png')
 
+)
 
 
 
-      const cardX =
-        Math.round(width * 0.06)
+}
 
 
-      const cardY =
-        Math.round(height * 0.04)
 
 
-      const cardW =
-        Math.round(width * 0.88)
 
 
-      const cardH =
-        Math.round(height * 0.92)
 
 
+const zipBuffer =
 
+await zipFile.generateAsync({
 
+type:'nodebuffer',
 
+compression:'DEFLATE',
 
-      drawRoundedRect(
+compressionOptions:{
 
-        ctx,
+level:9
 
-        cardX,
+}
 
-        cardY,
+})
 
-        cardW,
 
-        cardH,
 
-        radius
 
-      )
 
 
 
 
+return new NextResponse(
 
-      ctx.fill()
+zipBuffer,
 
+{
 
+status:200,
 
+headers:{
 
+'Content-Type':
+'application/zip',
 
-      ctx.lineWidth =
-        strokeWidth
+'Content-Disposition':
+`attachment; filename="${folderName}.zip"`,
 
+'Content-Length':
+String(zipBuffer.length),
 
+'Cache-Control':
+'no-store'
 
-      ctx.strokeStyle =
-        '#e5e7eb'
+}
 
+}
 
+)
 
-      ctx.stroke()
 
 
 
 
 
+}catch(err){
 
-      const qrCanvas =
-        createCanvas(
 
-          qrSize,
+console.error(
+'DOWNLOAD ALL PNG ERROR:',
+err
+)
 
-          qrSize
 
-        )
 
+return new NextResponse(
 
+'Terjadi kesalahan saat membuat ZIP PNG.',
 
+{
 
+status:500
 
+}
 
+)
 
-      await QRCode.toCanvas(
 
-        qrCanvas,
-
-        qrUrl,
-
-        {
-
-          errorCorrectionLevel:'H',
-
-          margin:1,
-
-          width:qrSize,
-
-          color:{
-
-            dark:'#000000',
-
-            light:'#ffffff'
-
-          }
-
-        }
-
-      )
-
-
-
-
-
-
-
-      ctx.drawImage(
-
-        qrCanvas,
-
-        (width - qrSize) / 2,
-
-        height * 0.16,
-
-        qrSize,
-
-        qrSize
-
-      )
-
-
-
-
-
-
-
-      ctx.fillStyle =
-        '#111111'
-
-
-
-      ctx.font =
-        `700 ${fontSize}px DejaVu Sans`
-
-
-
-      ctx.textAlign =
-        'center'
-
-
-
-      ctx.textBaseline =
-        'alphabetic'
-
-
-
-
-
-      ctx.fillText(
-
-        label,
-
-        width / 2,
-
-        height * 0.82
-
-      )
-
-
-
-
-
-
-
-      zipFolder.file(
-
-        `${label}.png`,
-
-        canvas.toBuffer('image/png')
-
-      )
-
-
-    }
-
-
-
-
-
-
-
-    const zipBuffer =
-
-      await zipFile.generateAsync({
-
-        type:'nodebuffer',
-
-        compression:'DEFLATE',
-
-        compressionOptions:{
-
-          level:9
-
-        }
-
-      })
-
-
-
-
-
-
-
-    return new NextResponse(
-
-      zipBuffer,
-
-      {
-
-        status:200,
-
-
-        headers:{
-
-
-          'Content-Type':
-
-          'application/zip',
-
-
-
-          'Content-Disposition':
-
-          `attachment; filename="${folderName}.zip"`,
-
-
-
-          'Content-Length':
-
-          String(zipBuffer.length),
-
-
-
-          'Cache-Control':
-
-          'no-store'
-
-
-        }
-
-      }
-
-    )
-
-
-
-
-
-
-
-  }catch(err){
-
-
-    console.error(
-
-      'DOWNLOAD ALL PNG ERROR:',
-
-      err
-
-    )
-
-
-
-    return new NextResponse(
-
-      'Terjadi kesalahan saat membuat ZIP PNG.',
-
-      {
-
-        status:500
-
-      }
-
-    )
-
-
-  }
+}
 
 
 }
