@@ -98,7 +98,7 @@ function getConfig(resolution){
 
     qrSize:1040,
 
-    fontSize:80,
+    fontSize:110,
 
     border:8
 
@@ -335,7 +335,7 @@ getConfig(resolution)
 // ===============================
 
 const cacheKey =
-`preview-v11:${cleanSerial}:${resolution}`
+`preview-v1:${cleanSerial}:${resolution}`
 
 
 
