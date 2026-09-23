@@ -144,7 +144,7 @@ export async function GET(req, { params }) {
     // REDIS IMAGE CACHE READ
     // ======================
     const cacheKey =
-      `preview-v2:${cleanSerial}:${resolution}`
+      `preview-v3:${cleanSerial}:${resolution}`
 
     try {
       const cached =
@@ -239,14 +239,14 @@ export async function GET(req, { params }) {
       `GA-${numberPart}`
 
     ctx.fillStyle = '#111111'
-    ctx.font = `bold ${config.fontSize}px sans-serif`
+    ctx.font = `bold ${config.fontSize}px DejaVu Sans`
     ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
+    ctx.textBaseline = 'alphabetic'
 
     ctx.fillText(
       number,
       config.width / 2,
-      config.height * 0.78
+      config.height * 0.82
     )
 
     const buffer =

@@ -161,7 +161,7 @@ export async function GET(req, { params }) {
       .slice(-3)}`
 
     ctx.fillStyle = '#111111'
-    ctx.font = `bold ${config.fontSize}px sans-serif`
+    ctx.font = `bold ${config.fontSize}px DejaVu Sans`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 
