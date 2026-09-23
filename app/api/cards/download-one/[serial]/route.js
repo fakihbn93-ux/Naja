@@ -150,7 +150,9 @@ export async function GET(req, { params }) {
     ctx.drawImage(
       qrCanvas,
       (config.width - config.qrSize) / 2,
-      config.height * 0.16
+      config.height * 0.16,
+      config.qrSize,
+      config.qrSize
     )
 
     const label = 
@@ -159,7 +161,7 @@ export async function GET(req, { params }) {
       .slice(-3)}`
 
     ctx.fillStyle = '#111111'
-    ctx.font = `bold ${config.fontSize}px Arial`
+    ctx.font = `bold ${config.fontSize}px sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
 
