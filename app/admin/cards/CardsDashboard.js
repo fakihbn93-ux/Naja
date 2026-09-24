@@ -1,9 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
-
-import MonitoringCards from '../components/MonitoringCards'
 
 
 export default function CardsDashboard(){
@@ -11,11 +8,10 @@ export default function CardsDashboard(){
 
   const [cards,setCards] = useState([])
 
-  const [monitoring,setMonitoring] = useState([])
-
   const [loading,setLoading] = useState(true)
 
   const [error,setError] = useState('')
+
 
   const [search,setSearch] = useState('')
 
@@ -26,153 +22,94 @@ export default function CardsDashboard(){
 
   const [end,setEnd] = useState(10)
 
-  const [resolution,setResolution] = useState('hd')
 
-
+  const [monitoring,setMonitoring] = useState([])
 
 
 
   async function loadCards(){
 
-
     try{
-
 
       setLoading(true)
 
 
-      const res = await fetch(
-
-        '/api/cards/list',
-
-        {
-          cache:'no-store'
-        }
-
+      const res =
+      await fetch(
+        '/api/cards'
       )
 
 
-
       const data =
-        await res.json()
+      await res.json()
+
 
       if(!res.ok){
 
         throw new Error(
-
-          data.error ||
-
-          'Gagal mengambil data kartu'
-
+          data.error || 'Gagal mengambil kartu'
         )
 
       }
 
 
-
       setCards(
-
         data.cards || []
-
       )
-
 
 
     }catch(err){
 
-
-      console.error(err)
-
-
       setError(
-
         err.message
-
       )
 
 
     }finally{
 
-
       setLoading(false)
-
 
     }
 
-
   }
+
+
 
 
 
   async function loadMonitoring(){
 
-
     try{
 
 
       const res =
-        await fetch(
-
-          '/api/admin/cards/monitoring',
-
-          {
-            cache:'no-store'
-          }
-
-        )
-
+      await fetch(
+        '/api/cards/monitoring'
+      )
 
 
       const data =
-        await res.json()
-
+      await res.json()
 
 
       if(res.ok){
 
         setMonitoring(
-
-          data.cards || []
-
+          data.monitoring || []
         )
 
       }
 
 
-
     }catch(err){
 
-
       console.error(
-
-        'MONITORING ERROR',
-
         err
-
       )
-
 
     }
 
-
   }
-
-
-  function downloadBatch(){
-
-
-    const url =
-
-      `/api/cards/download-all?start=${start}&end=${end}&resolution=${resolution}`
-
-
-
-    window.location.href = url
-
-
-  }
-
-
 
 
 
@@ -192,35 +129,27 @@ export default function CardsDashboard(){
 
 
 
-  const active =
-
-    cards.filter(
-
-      c => c.status === 'ACTIVE'
-
-    ).length
+  function getStatus(card){
 
 
+    if(card.status){
+
+      return card.status
+
+    }
 
 
+    if(card.assigned){
+
+      return 'ACTIVE'
+
+    }
 
 
-  const unassigned =
-
-    cards.filter(
-
-      c => c.status === 'UNASSIGNED'
-
-    ).length
+    return 'UNASSIGNED'
 
 
-
-
-
-  const lost =
-    cards.filter(
-      c => c.status === 'LOST'
-    ).length
+  }
 
 
 
@@ -228,39 +157,40 @@ export default function CardsDashboard(){
 
 
 
-  const filteredCards =
+  function filteredCards(){
 
-    cards.filter(card=>{
+
+    return cards.filter(card=>{
+
+
+      const keyword =
+      search
+      .toLowerCase()
+
 
 
       const matchSearch =
 
-        card.serial
+      !keyword ||
 
-        .toLowerCase()
+      card.serial
+      ?.toLowerCase()
+      .includes(keyword)
 
-        .includes(
 
-          search.toLowerCase()
 
-        )
-
+      const status =
+      getStatus(card)
 
 
 
       const matchFilter =
 
+      filter === 'ALL'
 
-        filter === 'ALL'
+      ||
 
-        ?
-
-        true
-
-        :
-
-        card.status === filter
-
+      status === filter
 
 
 
@@ -276,101 +206,157 @@ export default function CardsDashboard(){
     })
 
 
+  }
+
+
+
+
+
+
+
+  async function downloadOne(serial){
+
+    window.location.href =
+    `/api/cards/download-one/${serial}`
+
+  }
+
+
+
+
+
+
+
+  async function downloadBatch(){
+
+
+    window.location.href =
+
+    `/api/cards/download-all?start=${start}&end=${end}`
+
+
+  }
+
+
+
+
+
+
+  if(loading){
+
+
+    return (
+
+      <main className="wrap">
+
+        <div className="card">
+
+          Memuat data kartu...
+
+        </div>
+
+      </main>
+
+    )
+
+
+  }
+
+
+
+
+
+  if(error){
+
+
+    return (
+
+      <main className="wrap">
+
+        <div className="card error">
+
+          {error}
+
+        </div>
+
+      </main>
+
+    )
+
+
+  }
+
+
+
+  const visibleCards =
+    filteredCards()
+
+
+
+  const totalCards =
+    cards.length
+
+
+
+  const activeCards =
+    cards.filter(
+      card =>
+      getStatus(card) === 'ACTIVE'
+    ).length
+
+
+
+  const unassignedCards =
+    cards.filter(
+      card =>
+      getStatus(card) === 'UNASSIGNED'
+    ).length
+
+
+
+  const lostCards =
+    cards.filter(
+      card =>
+      getStatus(card) === 'LOST'
+    ).length
+
+
+
 
 
 
   return (
 
-    <main
-
-      style={{
-
-        padding:40,
-
-        background:'#f8fafc',
-
-        minHeight:'100vh'
-
-      }}
-
-    >
+    <main className="wrap">
 
 
 
-      <h1
+      {/* HEADER */}
 
-        style={{
+      <div className="nav">
 
-          fontSize:42,
 
-          fontWeight:800,
+        <div>
 
-          marginBottom:30,
+          <h1>
+            Card Management
+          </h1>
 
-          color:'#0f172a'
 
-        }}
+          <p className="muted">
+            Kelola kartu NFC, QR Code,
+            dan status aktivasi pelanggan.
+          </p>
 
-      >
-
-        Manajemen Kartu NFC
-
-      </h1>
-      <div
-
-        style={{
-
-          display:'grid',
-
-          gridTemplateColumns:
-          'repeat(4,1fr)',
-
-          gap:20,
-
-          marginBottom:40
-
-        }}
-
-      >
+        </div>
 
 
 
-        <CardStat
+        <span className="status">
 
-          title="Total Kartu"
+          {totalCards} Cards
 
-          value={cards.length}
-
-        />
-
-
-
-        <CardStat
-
-          title="ACTIVE"
-
-          value={active}
-
-        />
-
-
-
-        <CardStat
-
-          title="UNASSIGNED"
-
-          value={unassigned}
-
-        />
-
-
-        <CardStat
-
-          title="LOST"
-
-          value={lost}
-
-        />
+        </span>
 
 
       </div>
@@ -379,1040 +365,712 @@ export default function CardsDashboard(){
 
 
 
-      <div
 
-        style={{
 
-          background:'#fff',
+      {/* STATISTIC */}
 
-          borderRadius:20,
 
-          padding:25,
-
-          border:'1px solid #e5e7eb'
-
-        }}
-
+      <section
+        className="grid grid2"
       >
 
 
+        <div className="card">
 
-
-        <h2
-
-          style={{
-
-            marginBottom:20,
-
-            fontSize:28
-
-          }}
-
-        >
-
-          Daftar Kartu
-
-        </h2>
-
-
-
-
-
-
-        <div
-
-          style={{
-
-            background:'#f8fafc',
-
-            padding:20,
-
-            borderRadius:15,
-
-            marginBottom:25,
-
-            border:'1px solid #e5e7eb'
-
-          }}
-
-        >
-
-
-
-          <h3
-
-            style={{
-
-              marginTop:0,
-
-              marginBottom:15
-
-            }}
-
-          >
-
-            Download QR Batch
-
+          <h3>
+            Total Kartu
           </h3>
 
 
+          <strong>
+            {totalCards}
+          </strong>
+
+
+          <p className="muted">
+
+            Semua kartu terdaftar
+
+          </p>
+
+
+        </div>
 
 
 
-          <div
 
-            style={{
 
-              display:'flex',
+        <div className="card">
 
-              gap:12,
+          <h3>
+            Aktif
+          </h3>
 
-              flexWrap:'wrap'
 
-            }}
+          <strong>
+            {activeCards}
+          </strong>
 
-          >
 
+          <p className="muted">
+
+            Kartu sudah digunakan
+
+          </p>
+
+
+        </div>
+
+
+
+
+
+        <div className="card">
+
+          <h3>
+            Belum Aktif
+          </h3>
+
+
+          <strong>
+            {unassignedCards}
+          </strong>
+
+
+          <p className="muted">
+
+            Menunggu assignment
+
+          </p>
+
+
+        </div>
+
+
+
+
+
+        <div className="card">
+
+          <h3>
+            Hilang
+          </h3>
+
+
+          <strong>
+            {lostCards}
+          </strong>
+
+
+          <p className="muted">
+
+            Status kehilangan
+
+          </p>
+
+
+        </div>
+
+
+
+      </section>
+
+
+
+
+
+
+
+
+      {/* DOWNLOAD RANGE */}
+
+
+      <section
+        className="card"
+        style={{
+          marginTop:20
+        }}
+      >
+
+
+        <h3>
+          Download Kartu PNG
+        </h3>
+
+
+        <div
+          className="grid grid2"
+        >
+
+
+          <div>
+
+            <label>
+              Nomor Awal
+            </label>
 
 
             <input
 
-              type="number"
+              className="input"
 
               value={start}
 
-              onChange={(e)=>
-
-                setStart(e.target.value)
-
+              onChange={
+                e =>
+                setStart(
+                  e.target.value
+                )
               }
-
-              placeholder="Mulai"
-
-              style={{
-
-                padding:10,
-
-                width:120,
-
-                border:'1px solid #d1d5db',
-
-                borderRadius:10
-
-              }}
 
             />
-
-
-
-
-
-            <input
-
-              type="number"
-
-              value={end}
-
-              onChange={(e)=>
-
-                setEnd(e.target.value)
-
-              }
-
-              placeholder="Akhir"
-
-              style={{
-
-                padding:10,
-
-                width:120,
-
-                border:'1px solid #d1d5db',
-
-                borderRadius:10
-
-              }}
-
-            />
-
-
-
-
-
-
-
-            <select
-
-              value={resolution}
-
-              onChange={(e)=>
-
-                setResolution(e.target.value)
-
-              }
-
-              style={{
-
-                padding:10,
-
-                borderRadius:10,
-
-                border:'1px solid #d1d5db'
-
-              }}
-
-            >
-
-
-
-              <option value="standard">
-
-                Standard
-
-              </option>
-
-
-
-              <option value="hd">
-
-                HD
-
-              </option>
-
-
-
-              <option value="ultra">
-
-                Print
-
-              </option>
-
-
-
-            </select>
-
-
-
-
-
-
-            <button
-
-              onClick={downloadBatch}
-
-              style={{
-
-                padding:'10px 18px',
-
-                background:'#16a34a',
-
-                color:'#fff',
-
-                border:0,
-
-                borderRadius:10,
-
-                fontWeight:700,
-
-                cursor:'pointer'
-
-              }}
-
-            >
-
-              Download ZIP
-
-            </button>
-
-
-
 
           </div>
 
 
 
+
+
+          <div>
+
+            <label>
+              Nomor Akhir
+            </label>
+
+
+            <input
+
+              className="input"
+
+              value={end}
+
+              onChange={
+                e =>
+                setEnd(
+                  e.target.value
+                )
+              }
+
+            />
+
+          </div>
+
+
         </div>
 
 
+
+
+        <button
+
+          className="btn"
+
+          onClick={
+            downloadBatch
+          }
+
+        >
+
+          Download ZIP PNG
+
+        </button>
+
+
+
+      </section>
+
+
+
+
+
+
+
+      {/* SEARCH FILTER */}
+
+
+      <section
+        className="card"
+        style={{
+          marginTop:20
+        }}
+      >
+
+
+        <h3>
+          Daftar Kartu
+        </h3>
+
+
+
+        <input
+
+          className="input"
+
+          placeholder="Cari serial kartu..."
+
+          value={search}
+
+          onChange={
+            e =>
+            setSearch(
+              e.target.value
+            )
+          }
+
+        />
 
 
 
 
         <div
-
           style={{
-
             display:'flex',
-
-            gap:15,
-
-            marginBottom:25,
-
+            gap:10,
             flexWrap:'wrap'
-
           }}
-
         >
 
 
+          {
+            [
+              'ALL',
+              'ACTIVE',
+              'UNASSIGNED',
+              'LOST'
+            ]
 
+            .map(item=>(
 
-          <input
 
+              <button
 
-            placeholder="Cari serial kartu..."
+                key={item}
 
+                className={
+                  filter === item
+                  ?
+                  'btn'
+                  :
+                  'btn secondary'
+                }
 
-            value={search}
 
+                onClick={()=>
+                  setFilter(item)
+                }
 
-            onChange={(e)=>
+              >
 
-              setSearch(
+                {item}
 
-                e.target.value
+              </button>
 
-              )
 
-            }
+            ))
 
-
-            style={{
-
-              flex:1,
-
-              minWidth:220,
-
-              padding:12,
-
-              border:'1px solid #d1d5db',
-
-              borderRadius:10
-
-            }}
-
-
-          />
-
-
-
-
-
-
-          <select
-
-
-            value={filter}
-
-
-            onChange={(e)=>
-
-              setFilter(
-
-                e.target.value
-
-              )
-
-            }
-
-
-            style={{
-
-              padding:12,
-
-              borderRadius:10,
-
-              border:'1px solid #d1d5db'
-
-            }}
-
-
-          >
-
-            <option value="ALL">
-
-              Semua Status
-
-            </option>
-            
-
-            <option value="ACTIVE">
-
-              ACTIVE
-
-            </option>
-
-
-            <option value="UNASSIGNED">
-
-              UNASSIGNED
-
-            </option>
-
-
-            <option value="LOST">
-
-              LOST
-
-            </option>
-
-
-          </select>
-
-
-
-
-
-
-
-          <button
-
-
-            onClick={loadCards}
-
-
-            style={{
-
-
-              padding:'12px 18px',
-
-              background:'#111827',
-
-              color:'#fff',
-
-              border:0,
-
-              borderRadius:10,
-
-              fontWeight:700,
-
-              cursor:'pointer'
-
-
-            }}
-
-          >
-
-            Refresh
-
-          </button>
-
-
-
-
+          }
 
 
         </div>
 
 
+      </section>
 
 
+
+      {/* TABLE CARD */}
+
+
+      <section
+        className="card"
+        style={{
+          marginTop:20
+        }}
+      >
 
 
 
         {
+          visibleCards.length === 0
 
-          error &&
+          ?
+
+          <div
+            className="muted"
+          >
+
+            Tidak ada kartu ditemukan.
+
+          </div>
+
+
+          :
 
 
           <div
-
             style={{
-
-              background:'#fee2e2',
-
-              padding:15,
-
-              borderRadius:12,
-
-              color:'#991b1b',
-
-              marginBottom:20
-
+              overflowX:'auto'
             }}
-
           >
 
-            {error}
+
+            <table
+              className="table"
+            >
+
+              <thead>
+
+                <tr>
+
+                  <th>
+                    Serial
+                  </th>
+
+
+                  <th>
+                    Status
+                  </th>
+
+
+                  <th>
+                    Dibuat
+                  </th>
+
+
+                  <th>
+                    Action
+                  </th>
+
+
+                </tr>
+
+
+              </thead>
+
+
+
+              <tbody>
+
+
+              {
+                visibleCards.map(card=>(
+
+
+                  <tr
+                    key={card.id}
+                  >
+
+
+
+                    <td>
+
+                      <strong>
+                        {card.serial}
+                      </strong>
+
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+
+                      {
+                        getStatus(card) === 'ACTIVE'
+
+                        ?
+
+                        <span
+                          className="badge success-badge"
+                        >
+                          ACTIVE
+                        </span>
+
+
+                        :
+
+
+                        getStatus(card) === 'LOST'
+
+
+                        ?
+
+                        <span
+                          className="badge danger-badge"
+                        >
+                          LOST
+                        </span>
+
+
+                        :
+
+
+                        <span
+                          className="badge warning-badge"
+                        >
+                          UNASSIGNED
+                        </span>
+
+                      }
+
+
+
+                    </td>
+
+
+
+
+
+                    <td>
+
+                      {
+                        card.created_at
+
+                        ?
+
+                        new Date(
+                          card.created_at
+                        )
+                        .toLocaleDateString(
+                          'id-ID'
+                        )
+
+                        :
+
+                        '-'
+
+                      }
+
+
+                    </td>
+
+
+
+
+
+
+                    <td>
+
+
+                      <div
+                        style={{
+                          display:'flex',
+                          gap:8,
+                          flexWrap:'wrap'
+                        }}
+                      >
+
+
+                        <a
+
+                          className="btn secondary"
+
+                          href={
+                            `/admin/cards/${card.serial}`
+                          }
+
+                        >
+
+                          Detail
+
+                        </a>
+
+
+
+
+
+                        <button
+
+                          className="btn"
+
+                          onClick={()=>
+                            downloadOne(
+                              card.serial
+                            )
+                          }
+
+                        >
+
+                          QR PNG
+
+                        </button>
+
+
+
+                      </div>
+
+
+
+                    </td>
+
+
+
+                  </tr>
+
+
+                ))
+
+              }
+
+
+
+              </tbody>
+
+
+            </table>
 
 
           </div>
 
 
         }
+
+
+
+      </section>
+
+
+
+
+
+
+
+
+      {/* MONITORING */}
+
+
+
+      <section
+
+        className="card"
+
+        style={{
+          marginTop:20
+        }}
+
+      >
+
+
+        <h3>
+          Monitoring Aktivitas
+        </h3>
+
+
+
         {
-
-          loading
-
+          monitoring.length === 0
 
           ?
 
+          <p className="muted">
 
-          <p>
-            Memuat data kartu...
+            Belum ada aktivitas.
+
           </p>
-
 
 
           :
 
 
-
           <table
-
-            style={{
-
-              width:'100%',
-
-              borderCollapse:'collapse'
-
-            }}
-
+            className="table"
           >
-
-
 
             <thead>
 
-
               <tr>
 
-
-                <th style={th}>
+                <th>
                   Serial
                 </th>
 
-
-                <th style={th}>
-                  Status
+                <th>
+                  Event
                 </th>
 
-
-                <th style={th}>
-                  Bisnis
+                <th>
+                  Waktu
                 </th>
-
-
-                <th style={th}>
-                  Aktif Sejak
-                </th>
-
-
-                <th style={th}>
-                  Aksi
-                </th>
-
 
               </tr>
 
-
             </thead>
-
-
-
-
 
 
             <tbody>
 
 
             {
+              monitoring.map(
+                item=>(
+
+                  <tr
+                    key={item.id}
+                  >
+
+                    <td>
+                      {item.serial}
+                    </td>
 
 
-              filteredCards.map(card=>(
+                    <td>
+                      {item.event}
+                    </td>
 
 
+                    <td>
 
-                <tr key={card.id}>
-
-
-
-                  <td style={td}>
-
-                    <strong>
-
-                      {card.serial}
-
-                    </strong>
-
-
-                  </td>
-
-
-
-
-
-
-
-                  <td style={td}>
-
-
-                    <span
-
-                      style={{
-
-
-                        padding:'6px 12px',
-
-                        borderRadius:20,
-
-                        fontSize:14,
-
-                        fontWeight:600,
-
-
-                        background:
-
-                        card.status === 'ACTIVE'
-
+                      {
+                        item.created_at
                         ?
 
-                        '#dcfce7'
+                        new Date(
+                          item.created_at
+                        )
+                        .toLocaleString(
+                          'id-ID'
+                        )
 
                         :
 
-                        card.status === 'LOST'
+                        '-'
 
-                        ?
+                      }
 
-                        '#fee2e2'
+                    </td>
 
-                        :
 
-                        '#fef3c7',
+                  </tr>
 
 
+                )
 
-                        color:
-
-                        card.status === 'ACTIVE'
-
-                        ?
-
-                        '#166534'
-
-                        :
-
-                        card.status === 'LOST'
-
-                        ?
-
-                        '#991b1b'
-
-                        :
-
-                        '#92400e'
-
-
-                      }}
-
-                    >
-
-                      {card.status}
-
-
-                    </span>
-
-
-
-                  </td>
-
-
-
-
-
-
-
-
-                  <td style={td}>
-
-
-                    {
-
-                      card.business?.name ||
-
-                      '-'
-
-                    }
-
-
-                  </td>
-
-
-
-
-
-
-
-
-
-                  <td style={td}>
-
-
-                    {
-
-                      card.activated_at
-
-                      ?
-
-                      new Date(
-
-                        card.activated_at
-
-                      )
-
-                      .toLocaleString(
-
-                        'id-ID'
-
-                      )
-
-                      :
-
-                      '-'
-
-                    }
-
-
-
-                  </td>
-
-
-
-
-
-
-
-
-                  <td style={td}>
-
-
-                    <div
-
-                      style={{
-
-                        display:'flex',
-
-                        gap:8,
-
-                        flexWrap:'wrap'
-
-                      }}
-
-                    >
-
-
-
-
-                      <Link
-
-
-                        href={
-
-                          `/admin/cards/${card.serial}`
-
-                        }
-
-
-                        style={{
-
-
-                          padding:'8px 15px',
-
-                          background:'#111827',
-
-                          color:'#fff',
-
-                          borderRadius:10,
-
-                          textDecoration:'none',
-
-                          fontWeight:600
-
-
-                        }}
-
-                      >
-
-                        Detail
-
-
-                      </Link>
-
-
-
-
-
-
-                      <a
-
-
-                        href={
-
-                          `/api/cards/preview/${encodeURIComponent(card.serial)}?resolution=hd`
-
-                        }
-
-
-                        download={`${card.serial.replace('NFC-','')}.png`}
-
-
-                        style={{
-
-
-                          padding:'8px 15px',
-
-                          background:'#2563eb',
-
-                          color:'#fff',
-
-                          borderRadius:10,
-
-                          textDecoration:'none',
-
-                          fontWeight:600
-
-
-                        }}
-
-                      >
-
-                        QR PNG
-
-
-                      </a>
-
-
-
-
-
-
-                    </div>
-
-
-
-                  </td>
-
-
-
-
-
-                </tr>
-
-
-
-              ))
-
-
+              )
 
             }
-
 
 
             </tbody>
 
 
-
-
-
           </table>
-
 
 
         }
 
 
 
-      </div>
+      </section>
 
 
 
-      <MonitoringCards
 
-        cards={monitoring}
-
-      />
 
     </main>
 
-
   )
-
-
-}
-
-
-
-
-
-function QuickAction({
-  title,
-  desc,
-  href
-}){
-
-
-  return (
-
-    <Link
-
-      href={href}
-
-      style={{
-
-        padding:25,
-
-        background:'#f8fafc',
-
-        border:'1px solid #e5e7eb',
-
-        borderRadius:18,
-
-        textDecoration:'none',
-
-        color:'#0f172a'
-
-      }}
-
-    >
-
-
-      <h3>
-
-        {title}
-
-      </h3>
-
-
-      <p
-
-        style={{
-
-          color:'#64748b'
-
-        }}
-
-      >
-
-        {desc}
-
-      </p>
-
-
-    </Link>
-
-  )
-
-}
-
-
-
-
-
-
-
-
-
-function CardStat({title,value}){
-
-
-  return (
-
-    <div
-
-      style={{
-
-        background:'#fff',
-
-        padding:25,
-
-        borderRadius:20,
-
-        border:'1px solid #e5e7eb'
-
-      }}
-
-    >
-
-
-
-      <p
-
-        style={{
-
-          color:'#64748b',
-
-          fontSize:16,
-
-          marginBottom:10
-
-        }}
-
-      >
-
-        {title}
-
-
-      </p>
-
-
-
-
-      <h2
-
-        style={{
-
-          fontSize:40,
-
-          margin:0,
-
-          color:'#0f172a'
-
-        }}
-
-      >
-
-        {value}
-
-
-      </h2>
-
-
-
-    </div>
-
-
-  )
-
-
-}
-
-
-
-
-
-
-
-const th={
-
-  textAlign:'left',
-
-  padding:15,
-
-  borderBottom:'1px solid #e5e7eb',
-
-  color:'#334155'
-
-}
-
-
-
-const td={
-
-  padding:15,
-
-  borderBottom:'1px solid #e5e7eb',
-
-  color:'#334155'
 
 }
