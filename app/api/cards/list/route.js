@@ -62,6 +62,16 @@ export async function GET() {
 
           google_review_url
 
+        ),
+
+        events(
+
+          id,
+
+          method,
+
+          created_at
+
         )
 
       `)
@@ -221,6 +231,34 @@ export async function GET() {
 
 
 
+    const monitoring =
+      (cards || [])
+      .flatMap(card =>
+        (card.events || []).map(event=>({
+
+          id:event.id,
+
+          serial:card.serial,
+
+          event:
+            event.method === 'nfc'
+            ? 'NFC Tap'
+            : 'QR Scan',
+
+          created_at:event.created_at
+
+        }))
+      )
+      .sort(
+        (a,b)=>
+        new Date(b.created_at)
+        -
+        new Date(a.created_at)
+      )
+      .slice(0,10)
+
+
+
 
 
 
@@ -239,6 +277,8 @@ export async function GET() {
 
         cards:
         result
+
+        monitoring
 
 
       }

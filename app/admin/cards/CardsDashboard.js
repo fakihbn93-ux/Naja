@@ -95,6 +95,10 @@ export default function CardsDashboard(){
         data.cards || []
       )
 
+      setMonitoring(
+        data.monitoring || []
+      )
+
 
     }catch(err){
 
@@ -121,49 +125,10 @@ export default function CardsDashboard(){
 
 
 
-  async function loadMonitoring(){
-
-    try{
-
-
-      const res =
-      await fetch(
-        '/api/admin/cards/monitoring'
-      )
-
-
-      const data =
-      await res.json()
-
-
-      if(res.ok){
-
-        setMonitoring(
-          data.monitoring || []
-        )
-
-      }
-
-
-    }catch(err){
-
-      console.error(
-        err
-      )
-
-    }
-
-  }
-
-
-
-
 
   useEffect(()=>{
 
     loadCards()
-
-    loadMonitoring()
 
   },[])
 
