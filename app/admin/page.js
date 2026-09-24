@@ -160,6 +160,12 @@ export default async function Admin() {
 
     `)
 
+
+    console.log(
+      "SCAN ANALYTICS",
+      JSON.stringify(scanAnalytics.slice(0,3),null,2)
+    )
+
   const methodSummary = {
 
     nfc:0,

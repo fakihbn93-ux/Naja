@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 
 export default function Login() {
@@ -216,7 +217,7 @@ export default function Login() {
 
           width:'100%',
 
-          maxWidth:420,
+          maxWidth:480,
 
           background:'#fff',
 
@@ -225,7 +226,7 @@ export default function Login() {
           borderRadius:16,
 
           boxShadow:
-          '0 5px 25px rgba(0,0,0,.1)'
+          '0 10px 30px rgba(0,0,0,.08)'
 
         }}
 
@@ -233,20 +234,65 @@ export default function Login() {
 
 
 
-        <h1
+        <div
 
           style={{
 
-            marginBottom:8
+            width:80,
+
+            height:80,
+
+            borderRadius:"50%",
+
+            background:"#111827",
+
+            color:"#fff",
+
+            display:"flex",
+
+            alignItems:"center",
+
+            justifyContent:"center",
+
+            margin:"0 auto 20px",
+
+            fontSize:30,
+
+            fontWeight:800
 
           }}
 
         >
 
-          NFC Review Manager
+          <Image
+            src="/logo-naja.png"
+            width={140}
+            height={140}
+            alt="Naja Store"
+            style={{
+              objectFit:'contain'
+            }}
+          />
+
+        </div>
+
+
+
+        <h1
+
+          style={{
+
+            marginBottom:8,
+
+            textAlign:"center"
+
+          }}
+
+        >
+
+          Naja Store NFC Manager
 
         </h1>
-
 
 
 
@@ -254,13 +300,19 @@ export default function Login() {
 
           style={{
 
-            color:'#666',
+            color:'#64748b',
 
-            marginBottom:25
+            marginBottom:25,
+
+            textAlign:"center"
 
           }}
 
         >
+
+          Digital Review Card Management System
+
+        <br/>
 
           Login Admin / Installer
 
