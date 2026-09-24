@@ -128,7 +128,7 @@ export default function CardsDashboard(){
 
       const res =
       await fetch(
-        '/api/cards/monitoring'
+        '/api/admin/cards/monitoring'
       )
 
 
