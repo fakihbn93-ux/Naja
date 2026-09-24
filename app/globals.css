@@ -391,3 +391,12 @@ a{
   color:#166534;
 
 }
+
+
+.card strong{
+  font-size:28px;
+}
+
+.card{
+  min-height:150px;
+}
