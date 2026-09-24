@@ -71,9 +71,13 @@ export default function CardsDashboard(){
       JSON.parse(text)
 
 
-      const data =
-      await res.json()
+      }catch(e){
 
+      throw new Error(
+        "API mengembalikan response bukan JSON"
+      )
+
+    }
 
       if(!res.ok){
 
