@@ -1,6 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import {
+  useEffect,
+  useState
+} from 'react'
+
 
 
 export default function CardsDashboard(){
@@ -24,6 +28,20 @@ export default function CardsDashboard(){
 
 
   const [monitoring,setMonitoring] = useState([])
+
+
+
+  // ==========================
+  // PAGINATION
+  // ==========================
+
+  const [page,setPage] = useState(1)
+
+  const perPage = 10
+
+
+
+
 
 
 
@@ -122,6 +140,21 @@ export default function CardsDashboard(){
     loadMonitoring()
 
   },[])
+
+
+
+
+
+  // reset halaman ketika filter berubah
+
+  useEffect(()=>{
+
+    setPage(1)
+
+  },[
+    search,
+    filter
+  ])
 
 
 
@@ -238,10 +271,6 @@ export default function CardsDashboard(){
   }
 
 
-
-
-
-
   if(loading){
 
 
@@ -288,8 +317,30 @@ export default function CardsDashboard(){
 
 
 
-  const visibleCards =
+
+
+  const filtered =
     filteredCards()
+
+
+
+  const totalPages =
+    Math.ceil(
+      filtered.length / perPage
+    )
+
+
+
+  const visibleCards =
+    filtered.slice(
+
+      (page - 1) * perPage,
+
+      page * perPage
+
+    )
+
+
 
 
 
@@ -344,8 +395,10 @@ export default function CardsDashboard(){
 
 
           <p className="muted">
+
             Kelola kartu NFC, QR Code,
             dan status aktivasi pelanggan.
+
           </p>
 
         </div>
@@ -601,6 +654,13 @@ export default function CardsDashboard(){
         </h3>
 
 
+        <p className="muted">
+
+          Menampilkan {filtered.length} kartu
+
+        </p>
+
+
 
         <input
 
@@ -678,6 +738,7 @@ export default function CardsDashboard(){
 
 
 
+ id="xq3d8h"
       {/* TABLE CARD */}
 
 
@@ -689,17 +750,27 @@ export default function CardsDashboard(){
       >
 
 
-
         {
           visibleCards.length === 0
 
           ?
 
           <div
-            className="muted"
+            className="empty-state"
           >
 
-            Tidak ada kartu ditemukan.
+            <h3>
+              Tidak ada kartu ditemukan
+            </h3>
+
+
+            <p className="muted">
+
+              Coba ubah kata pencarian
+              atau filter status kartu.
+
+            </p>
+
 
           </div>
 
@@ -741,9 +812,7 @@ export default function CardsDashboard(){
                     Action
                   </th>
 
-
                 </tr>
-
 
               </thead>
 
@@ -761,32 +830,27 @@ export default function CardsDashboard(){
                   >
 
 
-
                     <td>
 
                       <strong>
                         {card.serial}
                       </strong>
 
-
                     </td>
 
 
 
-
-
                     <td>
-
 
                       {
                         getStatus(card) === 'ACTIVE'
 
                         ?
 
-                        <span
-                          className="badge success-badge"
-                        >
+                        <span className="badge success-badge">
+
                           ACTIVE
+
                         </span>
 
 
@@ -798,28 +862,25 @@ export default function CardsDashboard(){
 
                         ?
 
-                        <span
-                          className="badge danger-badge"
-                        >
+                        <span className="badge danger-badge">
+
                           LOST
+
                         </span>
 
 
                         :
 
 
-                        <span
-                          className="badge warning-badge"
-                        >
+                        <span className="badge warning-badge">
+
                           UNASSIGNED
+
                         </span>
 
                       }
 
-
-
                     </td>
-
 
 
 
@@ -844,9 +905,7 @@ export default function CardsDashboard(){
 
                       }
 
-
                     </td>
-
 
 
 
@@ -862,6 +921,7 @@ export default function CardsDashboard(){
                           flexWrap:'wrap'
                         }}
                       >
+
 
 
                         <a
@@ -887,9 +947,11 @@ export default function CardsDashboard(){
                           className="btn"
 
                           onClick={()=>
+
                             downloadOne(
                               card.serial
                             )
+
                           }
 
                         >
@@ -903,7 +965,6 @@ export default function CardsDashboard(){
                       </div>
 
 
-
                     </td>
 
 
@@ -914,7 +975,6 @@ export default function CardsDashboard(){
                 ))
 
               }
-
 
 
               </tbody>
@@ -930,6 +990,71 @@ export default function CardsDashboard(){
 
 
 
+
+        {/* PAGINATION */}
+
+
+        {
+          filtered.length > perPage &&
+
+          <div
+            className="pagination"
+          >
+
+
+            <button
+
+              className="btn secondary"
+
+              disabled={
+                page <= 1
+              }
+
+              onClick={()=>setPage(page-1)}
+
+            >
+
+              Previous
+
+            </button>
+
+
+
+
+
+            <span className="muted">
+
+              Halaman {page} dari {totalPages || 1}
+
+            </span>
+
+
+
+
+
+            <button
+
+              className="btn secondary"
+
+              disabled={
+                page >= totalPages
+              }
+
+              onClick={()=>setPage(page+1)}
+
+            >
+
+              Next
+
+            </button>
+
+
+
+          </div>
+
+        }
+
+
       </section>
 
 
@@ -940,7 +1065,6 @@ export default function CardsDashboard(){
 
 
       {/* MONITORING */}
-
 
 
       <section
@@ -955,15 +1079,20 @@ export default function CardsDashboard(){
 
 
         <h3>
+
           Monitoring Aktivitas
+
         </h3>
+
 
 
 
         {
           monitoring.length === 0
 
+
           ?
+
 
           <p className="muted">
 
@@ -972,12 +1101,15 @@ export default function CardsDashboard(){
           </p>
 
 
+
           :
+
 
 
           <table
             className="table"
           >
+
 
             <thead>
 
@@ -987,29 +1119,34 @@ export default function CardsDashboard(){
                   Serial
                 </th>
 
+
                 <th>
                   Event
                 </th>
 
+
                 <th>
                   Waktu
                 </th>
+
 
               </tr>
 
             </thead>
 
 
+
             <tbody>
 
 
-            {
-              monitoring.map(
-                item=>(
+              {
+                monitoring.map(item=>(
+
 
                   <tr
                     key={item.id}
                   >
+
 
                     <td>
                       {item.serial}
@@ -1025,6 +1162,7 @@ export default function CardsDashboard(){
 
                       {
                         item.created_at
+
                         ?
 
                         new Date(
@@ -1046,11 +1184,9 @@ export default function CardsDashboard(){
                   </tr>
 
 
-                )
+                ))
 
-              )
-
-            }
+              }
 
 
             </tbody>
