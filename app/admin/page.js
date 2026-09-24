@@ -813,7 +813,7 @@ export default async function Admin() {
     <main className="wrap">
 
       <div className="nav">
-        <h1>NFC Review Manager</h1>
+        <h1>Naja Store NFC Manager</h1>
 
         <span className="status">
           ADMIN
