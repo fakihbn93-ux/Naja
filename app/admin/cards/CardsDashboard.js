@@ -52,32 +52,35 @@ export default function CardsDashboard(){
       setLoading(true)
 
 
-      const res =
-      await fetch(
+      const res = await fetch(
         '/api/cards'
       )
 
-      const text =
-      await res.text()
+
+      const text = await res.text()
 
 
       console.log(
         "API RESPONSE:",
         text
-      )
+     )
 
 
-      const data =
-      JSON.parse(text)
+    let data
 
+
+      try{
+
+        data = JSON.parse(text)
 
       }catch(e){
 
-      throw new Error(
-        "API mengembalikan response bukan JSON"
-      )
+        throw new Error(
+          "Response API bukan JSON"
+       )
 
-    }
+      }
+
 
       if(!res.ok){
 
@@ -95,9 +98,15 @@ export default function CardsDashboard(){
 
     }catch(err){
 
+      console.error(
+        "LOAD CARDS ERROR:",
+        err
+      )
+
+
       setError(
         err.message
-      )
+     )
 
 
     }finally{
