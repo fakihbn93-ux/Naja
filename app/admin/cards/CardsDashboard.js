@@ -53,7 +53,7 @@ export default function CardsDashboard(){
 
 
       const res = await fetch(
-        '/api/cards'
+        '/api/cards/list'
       )
 
 
