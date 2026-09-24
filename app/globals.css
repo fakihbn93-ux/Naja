@@ -1,5 +1,3 @@
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f6f8;color:#111827}a{color:inherit;text-decoration:none}.wrap{max-width:1100px;margin:auto;padding:24px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:20px;box-shadow:0 4px 18px #00000008}.grid{display:grid;gap:16px}.grid2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}.btn{display:inline-block;border:0;border-radius:9px;padding:10px 14px;background:#111827;color:#fff;cursor:pointer}.btn.secondary{background:#e5e7eb;color:#111827}.btn.danger{background:#b91c1c}.input{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;margin:6px 0 14px}.muted{color:#6b7280}.status{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef2ff;font-size:12px}.nav{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap}.table{width:100%;border-collapse:collapse}.table th,.table td{padding:10px;border-bottom:1px solid #eee;text-align:left;font-size:14px}.error{background:#fee2e2;padding:10px;border-radius:8px;color:#991b1b}.success{background:#dcfce7;padding:10px;border-radius:8px;color:#166534}
-
 *{
   box-sizing:border-box;
 }
@@ -33,6 +31,13 @@ a{
 
 
 
+
+
+/* =========================
+   CARD
+========================= */
+
+
 .card{
 
   background:#ffffff;
@@ -47,6 +52,53 @@ a{
   0 8px 25px rgba(15,23,42,.05);
 
 }
+
+
+
+/* statistik dashboard */
+
+.card h2,
+.card h3{
+
+  margin-top:0;
+
+  margin-bottom:14px;
+
+  font-weight:700;
+
+  color:#111827;
+
+}
+
+
+
+.card strong{
+
+  display:block;
+
+  font-size:32px;
+
+  line-height:1.2;
+
+  margin-bottom:10px;
+
+}
+
+
+
+.card .muted{
+
+  color:#6b7280;
+
+  font-size:15px;
+
+  line-height:1.4;
+
+}
+
+
+
+
 
 
 
@@ -67,6 +119,15 @@ a{
 
 }
 
+
+
+
+
+
+
+/* =========================
+   BUTTON
+========================= */
 
 
 .btn{
@@ -109,6 +170,15 @@ a{
 
 
 
+
+
+
+
+/* =========================
+   INPUT
+========================= */
+
+
 .input{
 
   width:100%;
@@ -125,11 +195,24 @@ a{
 
 
 
+
+
+
+
+/* =========================
+   TEXT
+========================= */
+
+
 .muted{
 
   color:#6b7280;
 
 }
+
+
+
+
 
 
 
@@ -162,8 +245,10 @@ a{
 
 
 
+
+
 /* =========================
-   HEADER TITLE
+   HEADER
 ========================= */
 
 
@@ -203,6 +288,43 @@ a{
 
 
 
+.nav p{
+
+  margin-top:6px;
+
+}
+
+
+
+
+
+
+
+/* =========================
+   WELCOME CARD
+========================= */
+
+
+.welcome-card h2{
+
+  margin-bottom:8px;
+
+}
+
+
+
+.welcome-card p{
+
+  margin:0;
+
+  font-size:15px;
+
+}
+
+
+
+
+
 
 
 /* =========================
@@ -236,6 +358,9 @@ a{
 
 
 
+
+
+
 /* =========================
    MESSAGE
 ========================= */
@@ -265,21 +390,4 @@ a{
 
   color:#166534;
 
-}
-
-
-.welcome-card h2{
-  margin-bottom:8px;
-}
-
-
-.welcome-card p{
-  margin:0;
-  font-size:15px;
-}
-
-
-
-.nav p{
-  margin-top:6px;
 }
