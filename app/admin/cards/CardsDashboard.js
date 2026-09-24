@@ -57,6 +57,19 @@ export default function CardsDashboard(){
         '/api/cards'
       )
 
+      const text =
+      await res.text()
+
+
+      console.log(
+        "API RESPONSE:",
+        text
+      )
+
+
+      const data =
+      JSON.parse(text)
+
 
       const data =
       await res.json()
