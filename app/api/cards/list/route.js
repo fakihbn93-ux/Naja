@@ -276,9 +276,9 @@ export async function GET() {
 
 
         cards:
-        result
+        result,
 
-        monitoring
+        monitoring: monitoring
 
 
       }
