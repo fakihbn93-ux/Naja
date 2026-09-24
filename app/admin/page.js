@@ -813,7 +813,15 @@ export default async function Admin() {
     <main className="wrap">
 
       <div className="nav">
-        <h1>Naja Store NFC Manager</h1>
+        <div>
+          <h1>
+            Naja Store NFC Manager
+          </h1>
+
+          <p className="muted">
+            Digital Review Card Management System
+          </p>
+        </div>
 
         <span className="status">
           ADMIN
@@ -826,6 +834,11 @@ export default async function Admin() {
         <h2>
           Selamat datang, {profile.full_name || user.email}
         </h2>
+
+        <p className="muted">
+          Kelola kartu NFC, QR Review, monitoring interaksi,
+          dan laporan performa bisnis dalam satu dashboard.
+        </p>
 
       </div>
 

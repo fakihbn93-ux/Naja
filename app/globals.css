@@ -266,3 +266,20 @@ a{
   color:#166534;
 
 }
+
+
+.welcome-card h2{
+  margin-bottom:8px;
+}
+
+
+.welcome-card p{
+  margin:0;
+  font-size:15px;
+}
+
+
+
+.nav p{
+  margin-top:6px;
+}
