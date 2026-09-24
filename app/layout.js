@@ -1,8 +1,8 @@
 import './globals.css'
 
 export const metadata = {
-  title: "NFC Review Manager",
-  description: "Manajemen kartu NFC + QR Google Review"
+  title: "Naja Store Admin",
+  description: "Manajemen kartu NFC digital Naja Store"
 };
 
 export default function RootLayout({children}) {
