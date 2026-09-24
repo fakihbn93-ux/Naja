@@ -782,6 +782,30 @@ export default async function Admin() {
     })
 
 
+  const activationRate =
+    totalCards
+    ?
+    Math.round(
+      (activeCards / totalCards) * 100
+    )
+    :
+    0
+
+
+  const interactionTotal =
+    (totalEvents || 0)
+
+
+  const qrPercentage =
+    interactionTotal
+    ?
+    Math.round(
+      (qrEvents / interactionTotal) * 100
+    )
+    :
+    0
+
+
 
   // ======================
   // KARTU TERBARU
@@ -857,10 +881,20 @@ export default async function Admin() {
 
 
         <div className="card">
-          <h3>Kartu Aktif</h3>
-          <strong>{activeCards || 0}</strong>
-        </div>
 
+          <h3>Kartu Aktif</h3>
+
+          <strong>
+            {activeCards || 0}
+          </strong>
+
+
+          <p className="muted">
+            {activationRate}% dari total kartu
+          </p>
+
+
+        </div>
 
         <div className="card">
           <h3>Belum Aktif</h3>
@@ -887,8 +921,19 @@ export default async function Admin() {
 
 
         <div className="card">
+
           <h3>QR Scan</h3>
-          <strong>{qrEvents || 0}</strong>
+
+          <strong>
+            {qrEvents || 0}
+          </strong>
+
+
+          <p className="muted">
+            {qrPercentage}% dari seluruh interaksi
+          </p>
+
+
         </div>
 
 
