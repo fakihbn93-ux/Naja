@@ -4,244 +4,154 @@ import { supabaseAdmin } from '../../../../../lib/supabase/admin'
 import { requireAdmin } from '../../../../../lib/auth/admin'
 
 
-
 export async function GET(){
 
+try{
 
-  try{
 
+const auth =
+await requireAdmin()
 
-    const auth =
-      await requireAdmin()
 
+if(auth.error){
 
+return NextResponse.json(
+{
+error:auth.error
+},
+{
+status:auth.status
+}
+)
 
-    if(auth.error){
+}
 
-      return NextResponse.json(
 
-        {
-          error:auth.error
-        },
 
-        {
-          status:auth.status
-        }
+const {data:events,error}=
 
-      )
+await supabaseAdmin
 
-    }
+.from('events')
 
+.select(`
 
+id,
 
+method,
 
+created_at,
 
-    const {data:cards,error}=
+cards(
 
-    await supabaseAdmin
+serial,
 
-    .from('cards')
+status,
 
-    .select(`
+businesses(
 
-      id,
+name
 
-      serial,
+)
 
-      status,
+)
 
-      businesses(
+`)
 
-        name
+.order(
 
-      ),
+'created_at',
 
-      events(
+{
+ascending:false
+}
 
-        id,
+)
 
-        method,
+.limit(50)
 
-        created_at
 
-      )
 
-    `)
 
-    .order(
 
-      'serial',
+if(error){
 
-      {
-        ascending:true
-      }
+console.error(error)
 
-    )
+return NextResponse.json(
+{
+error:error.message
+},
+{
+status:500
+}
+)
 
+}
 
 
 
 
 
-    if(error){
+const monitoring =
 
-      console.error(error)
+(events || [])
 
+.map(item=>({
 
-      return NextResponse.json(
+serial:
+item.cards?.serial || '-',
 
-        {
-          error:error.message
-        },
+status:
+item.cards?.status || '-',
 
-        {
-          status:500
-        }
+store:
+item.cards?.businesses?.name || '-',
 
-      )
+method:
+item.method,
 
-    }
+created_at:
+item.created_at
 
 
+}))
 
 
 
-    const result = cards.map(card=>{
 
 
-      const events =
-        (card.events || [])
-        .filter(
-          e =>
-          e.method === 'nfc'
-          ||
-          e.method === 'qr'
-        )
+return NextResponse.json({
 
+total:
+monitoring.length,
 
+monitoring
 
-      const sortedEvents =
+})
 
-        [...events]
 
-        .sort(
 
-          (a,b)=>
 
-          new Date(b.created_at)
-          -
-          new Date(a.created_at)
 
-        )
+}catch(error){
 
+console.error(
+'MONITORING ERROR',
+error
+)
 
 
+return NextResponse.json(
+{
+error:'Server error'
+},
+{
+status:500
+}
+)
 
-
-      return {
-
-        serial:
-        card.serial,
-
-
-        status:
-        card.status,
-
-
-
-        store:
-
-        card.businesses?.name || '-',
-
-
-
-        total:
-
-        events.length,
-
-
-
-        lastScan:
-
-        sortedEvents[0]?.created_at || null,
-
-
-
-        nfc:
-
-        events.filter(
-
-          e=>e.method==='nfc'
-
-        ).length,
-
-
-
-        qr:
-
-        events.filter(
-
-          e=>e.method==='qr'
-
-        ).length
-
-
-      }
-
-
-    })
-
-
-
-
-
-
-    return NextResponse.json(
-
-      {
-
-        total:
-        result.length,
-
-
-        cards:
-        result
-
-      }
-
-    )
-
-
-
-
-
-  }catch(error){
-
-
-    console.error(
-
-      'MONITORING ERROR',
-
-      error
-
-    )
-
-
-
-    return NextResponse.json(
-
-      {
-        error:'Server error'
-      },
-
-      {
-        status:500
-      }
-
-    )
-
-
-  }
+}
 
 
 }
