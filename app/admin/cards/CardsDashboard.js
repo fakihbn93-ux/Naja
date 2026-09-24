@@ -763,8 +763,6 @@ export default function CardsDashboard(){
       </section>
 
 
-
- id="xq3d8h"
       {/* TABLE CARD */}
 
 
