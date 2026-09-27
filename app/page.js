@@ -8,6 +8,8 @@ export default function HomePage(){
 
     <main
 
+      className="hero-container hero-bg"
+
       style={{
 
         minHeight:"100vh",
@@ -101,6 +103,8 @@ export default function HomePage(){
 
       <div
 
+        className="owner-image"
+
         style={{
 
           position:"absolute",
@@ -153,6 +157,8 @@ export default function HomePage(){
 
       <section
 
+        className="hero-content"
+
         style={{
 
           position:"relative",
@@ -195,6 +201,8 @@ export default function HomePage(){
 
           <h1
 
+            className="hero-title"
+
             style={{
 
               fontSize:58,
@@ -225,6 +233,8 @@ export default function HomePage(){
 
           <p
 
+            className="hero-subtitle"
+
             style={{
 
               fontSize:35,
@@ -252,6 +262,8 @@ export default function HomePage(){
 
 
           <p
+
+            className="hero-description"
 
             style={{
 
@@ -283,6 +295,8 @@ export default function HomePage(){
 
           <Link
 
+            className="login-button"
+
             href="/login"
 
             style={{
@@ -298,7 +312,7 @@ export default function HomePage(){
               transform:"translateY(40px)",
 
               width:180,
-  
+
               height:55,
 
               background:"#5d6d90",
