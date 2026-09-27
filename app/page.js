@@ -357,7 +357,8 @@ margin:0
 
 >
 
-Digital NFC Business Solution
+Smart NFC Digital Business Solution
+
 
 </h2>
 
@@ -391,7 +392,7 @@ letterSpacing:"3px"
 
 >
 
-SMART DIGITAL TECHNOLOGY
+SMART TECHNOLOGY TO GROW YOUR BUSINESS
 
 </div>
 
