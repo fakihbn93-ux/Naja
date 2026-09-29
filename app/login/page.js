@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
+import LoginAnimation from "../components/LoginAnimation"
 
 
 export default function Login() {
@@ -16,6 +17,8 @@ export default function Login() {
   const [password,setPassword] = useState('')
   const [error,setError] = useState('')
   const [loading,setLoading] = useState(false)
+
+  const [success,setSuccess] = useState(false)
 
 
 
@@ -116,40 +119,17 @@ export default function Login() {
 
       await supabase.auth.getSession()
 
+      setSuccess(true)
 
-
-
-
-
-      setError(
-
-        'Login berhasil. Membuka dashboard...'
-
-      )
-
-
-
-
+      setTimeout(()=>{
 
       router.refresh()
 
 
 
+      window.location.href="/admin"
 
-
-
-      setTimeout(()=>{
-
-
-        window.location.href =
-          '/admin'
-
-
-      },500)
-
-
-
-
+      },4000)
 
 
 
@@ -203,7 +183,8 @@ export default function Login() {
 
         padding:20,
 
-        background:'#f5f5f5'
+        background:
+        'radial-gradient(circle at top,#0f172a,#020617)'
 
       }}
 
@@ -219,14 +200,14 @@ export default function Login() {
 
           maxWidth:480,
 
-          background:'#fff',
+          background:'#e2d5d5',
 
-          padding:30,
+          padding:"0px 30px 30px",
 
           borderRadius:16,
 
           boxShadow:
-          '0 10px 30px rgba(0,0,0,.08)'
+          '0 10px 30px rgba(249, 231, 231, 0.08)'
 
         }}
 
@@ -234,47 +215,31 @@ export default function Login() {
 
 
 
+        {/* LOGO */}
+
+
         <div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    height: 320,
+    overflow: "hidden",
+    marginTop: -97,
+    marginBottom: -10,
+  }}
+>
+  <div
+    style={{
+      width: 397,
+      height: 320,
+      transform: "translateY(10px)",
+    }}
+  >
+    <LoginAnimation success={success} />
+  </div>
+</div>
 
-          style={{
 
-            width:80,
-
-            height:80,
-
-            borderRadius:"50%",
-
-            background:"#111827",
-
-            color:"#fff",
-
-            display:"flex",
-
-            alignItems:"center",
-
-            justifyContent:"center",
-
-            margin:"0 auto 20px",
-
-            fontSize:30,
-
-            fontWeight:800
-
-          }}
-
-        >
-
-          <Image
-            src="/logo-naja.png"
-            width={140}
-            height={140}
-            alt="Naja Store"
-            style={{
-              objectFit:'contain'
-            }}
-          />
-
-        </div>
 
 
 
@@ -312,7 +277,7 @@ export default function Login() {
 
           Digital Review Card Management System
 
-        <br/>
+          <br/>
 
           Login Admin / Installer
 
@@ -336,30 +301,9 @@ export default function Login() {
 
               borderRadius:8,
 
-              background:
+              background:'#ffe8e8',
 
-              error.startsWith('Login berhasil')
-
-              ?
-
-              '#e7f7ed'
-
-              :
-
-              '#ffe8e8',
-
-
-              color:
-
-              error.startsWith('Login berhasil')
-
-              ?
-
-              '#147a3d'
-
-              :
-
-              '#b00020'
+              color:'#b00020'
 
             }}
 
@@ -526,7 +470,7 @@ export default function Login() {
 
               :
 
-              '#111',
+              '#111827',
 
               color:'#fff',
 
@@ -551,6 +495,7 @@ export default function Login() {
           >
 
             {
+
               loading
 
               ?
@@ -560,6 +505,7 @@ export default function Login() {
               :
 
               'Masuk'
+
             }
 
 
@@ -568,8 +514,6 @@ export default function Login() {
 
 
         </form>
-
-
 
 
       </div>

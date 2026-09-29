@@ -8,9 +8,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@rive-app/react-canvas": "^4.35.0",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.57.0",
     "canvas": "^3.2.3",
+    "framer-motion": "^13.4.4",
     "ioredis": "^6.0.0",
     "jszip": "^3.10.2",
     "next": "16.3.4",
